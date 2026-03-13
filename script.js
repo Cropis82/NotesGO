@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchBtn.addEventListener('click', async () => {
         const url = apiUrlInput.value.trim();
-        const proxy = "https://corsproxy.io/?";
+        const proxy = "https://api.allorigins.win/raw?url=";
 
         if (!url) {
             jsonOutput.textContent = "Errore: Inserisci un URL valido prima di chiamare l'API.";
