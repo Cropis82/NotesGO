@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchBtn.addEventListener('click', async () => {
         const url = apiUrlInput.value.trim();
+        const proxy = "https://corsproxy.io/?";
 
         if (!url) {
             jsonOutput.textContent = "Errore: Inserisci un URL valido prima di chiamare l'API.";
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         jsonOutput.textContent = "Chiamata in corso...";
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(proxy + url);
             
             // Gestione di errori HTTP (es. 404 Not Found, 500 Internal Error)
             if (!response.ok) {
