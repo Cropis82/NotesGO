@@ -1,0 +1,101 @@
+/* Definizione della palette colori richiesta */
+:root {
+    --bg-dark: #132933;
+    --text-light: #fff5ef;
+    --accent-title: #fce5cd;
+    --glow-shadow: #ff6b65;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: rgba(255, 245, 239, 0.05);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Titolo con effetto luminoso centrato */
+.glow-title {
+    color: var(--accent-title);
+    text-align: center;
+    font-size: 2.5rem;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px var(--glow-shadow), 0 0 25px var(--glow-shadow);
+}
+
+.input-section {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 2rem;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px 15px;
+    background-color: rgba(19, 41, 51, 0.8);
+    border: 1px solid var(--accent-title);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-size: 1rem;
+    outline: none;
+    transition: box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus {
+    box-shadow: 0 0 8px rgba(252, 229, 205, 0.4);
+}
+
+button {
+    padding: 12px 24px;
+    background-color: var(--accent-title);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px var(--glow-shadow);
+}
+
+button:hover {
+    background-color: var(--glow-shadow);
+    color: var(--text-light);
+    box-shadow: 0 0 20px var(--glow-shadow);
+}
+
+.output-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.output-label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--accent-title);
+}
+
+.json-box {
+    background-color: #0c1b22; /* Un tono leggermente più scuro dello sfondo base */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 245, 239, 0.1);
+    min-height: 150px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--text-light);
+}

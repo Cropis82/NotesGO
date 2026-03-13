@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tester API FastAPI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="glow-title">API Tester</h1>
+        
+        <div class="input-section">
+            <input type="text" id="apiUrl" placeholder="Inserisci il link dell'API..." value="http://127.0.0.1:8000/api/test">
+            <button id="fetchBtn">Chiama API</button>
+        </div>
+
+        <div class="output-section">
+            <p class="output-label">Risposta JSON:</p>
+            <pre id="jsonOutput" class="json-box">In attesa di chiamata...</pre>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
