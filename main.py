@@ -3,16 +3,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tinydb import TinyDB, Query
 
-# Configurazione CORS per permettere al frontend di comunicare col backend
+app = FastAPI()
+
+origins = [
+    "*"  # per sviluppo (accetta tutte le origini)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In produzione dovresti mettere l'URL esatto del frontend
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app = FastAPI()
 
 # Inizializza il database TinyDB (creerà un file db.json nella cartella)
 db = TinyDB('db.json')
