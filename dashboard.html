@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NotesGO - Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="dashboard-body">
-    
+
     <header class="top-header">
         <div class="header-left">
             <h1 class="logo-title">NotesGO</h1>
@@ -26,15 +28,57 @@
         <div class="main-header">
             <h2>I tuoi gruppi</h2>
         </div>
-        
+
         <div class="filter-section">
-            <input type="text" id="local-search-input" placeholder="Filtra i tuoi gruppi..." class="search-bar local-search">
+            <input type="text" id="local-search-input" placeholder="Filtra i tuoi gruppi..."
+                class="search-bar local-search">
         </div>
-        
+
         <div id="groups-container" class="groups-list">
-            </div>
+        </div>
     </main>
+
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Impostazioni</h2>
+                <button id="close-settings" class="close-btn">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Tema dell'App</h3>
+                    <p class="settings-desc">Scegli la combinazione di colori che preferisci.</p>
+
+                    <div class="theme-grid">
+                        <div class="theme-option" data-theme="default">
+                            <div class="color-cube cube-default selected"></div>
+                            <span>NotesGO</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark">
+                            <div class="color-cube cube-dark"></div>
+                            <span>Dark Mode</span>
+                        </div>
+                        <div class="theme-option" data-theme="ocean">
+                            <div class="color-cube cube-ocean"></div>
+                            <span>Oceano</span>
+                        </div>
+                        <div class="theme-option" data-theme="forest">
+                            <div class="color-cube cube-forest"></div>
+                            <span>Foresta</span>
+                        </div>
+                        <div class="theme-option" data-theme="minimal">
+                            <div class="color-cube cube-minimal"></div>
+                            <span>Minimal</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <script src="dashboard.js"></script>
 </body>
+
 </html>

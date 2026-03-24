@@ -398,3 +398,128 @@ input[type="password"]:focus {
     border-radius: 50%;
     box-shadow: 0 0 5px var(--theme-online);
 }
+
+/* =========================================
+   POPUP MODALE (IMPOSTAZIONI)
+   ========================================= */
+
+/* Lo sfondo scuro che copre tutto */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Sfondo nero semitrasparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(3px); /* Effetto sfocato moderno */
+    transition: opacity 0.3s ease;
+}
+
+/* Classe per nascondere il popup */
+.hidden {
+    display: none !important;
+}
+
+/* La finestra vera e propria */
+.modal-content {
+    background-color: var(--theme-bg);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: var(--theme-surface);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--theme-border);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--bg-dark);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--theme-placeholder);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: var(--bg-dark);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.settings-section h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: var(--bg-dark);
+}
+
+.settings-desc {
+    color: var(--theme-placeholder);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+/* --- GRIGLIA DEI TEMI E CUBI --- */
+.theme-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.theme-option span {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--bg-dark);
+}
+
+/* Il cubo base */
+.color-cube {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    border: 3px solid transparent; /* Bordo invisibile di base */
+}
+
+/* Effetto di selezione (più grande e con bordo colorato) */
+.color-cube.selected {
+    transform: scale(1.15);
+    border-color: var(--theme-primary); /* Prende il colore arancione o del tema attivo */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+/* Le "verniciature" dei singoli cubi tramite gradienti netti */
+/* 50% Sfondo, 25% Primario, 25% Testo/Scuro */
+.cube-default { background: linear-gradient(to bottom, #fff5ef 50%, #f6b36b 50% 75%, #132933 75%); }
+.cube-dark { background: linear-gradient(to bottom, #1a1a2e 50%, #e94560 50% 75%, #e0e0e0 75%); }
+.cube-ocean { background: linear-gradient(to bottom, #e3f2fd 50%, #2196f3 50% 75%, #0d47a1 75%); }
+.cube-forest { background: linear-gradient(to bottom, #f1f8e9 50%, #8bc34a 50% 75%, #33691e 75%); }
+.cube-minimal { background: linear-gradient(to bottom, #ffffff 50%, #9e9e9e 50% 75%, #212121 75%); border: 1px solid #ddd; }

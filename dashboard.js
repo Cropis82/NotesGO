@@ -31,11 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. Generatore delle Carte HTML
     function renderGroups(groups) {
         groupsContainer.innerHTML = ''; // Pulisce il contenitore prima di disegnare
-        
+
         groups.forEach(group => {
             const card = document.createElement('div');
             card.className = 'group-card';
-            
+
             card.innerHTML = `
                 <h3 class="group-name">${group.name}</h3>
                 <div class="group-stats">
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
-            
+
             // Quando clicchi su un gruppo
             card.addEventListener('click', () => {
                 alert(`Entrando nel gruppo: "${group.name}"\n\n(Qui in futuro caricheremo la Kanban Board e la Chat!)`);
@@ -66,14 +66,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     localSearchInput.addEventListener('input', (event) => {
         // Prende quello che scrivi e lo trasforma in minuscolo
-        const termineRicerca = event.target.value.toLowerCase(); 
-        
+        const termineRicerca = event.target.value.toLowerCase();
+
         // Filtra l'array dei gruppi
-        const gruppiFiltrati = userGroups.filter(gruppo => 
+        const gruppiFiltrati = userGroups.filter(gruppo =>
             gruppo.name.toLowerCase().includes(termineRicerca)
         );
-        
+
         // Ridisegna la lista usando solo i gruppi che corrispondono alla ricerca!
         renderGroups(gruppiFiltrati);
+    });
+
+    // --- LOGICA MODALE IMPOSTAZIONI ---
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettingsBtn = document.getElementById('close-settings');
+    const colorCubes = document.querySelectorAll('.color-cube');
+
+    // Apri il popup
+    settingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('hidden');
+    });
+
+    // Chiudi il popup dalla "X"
+    closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+    });
+
+    // Chiudi il popup cliccando fuori dalla finestra bianca
+    settingsModal.addEventListener('click', (event) => {
+        if (event.target === settingsModal) {
+            settingsModal.classList.add('hidden');
+        }
+    });
+
+    // Gestione Selezione Tema (Solo visiva per ora)
+    colorCubes.forEach(cube => {
+        cube.addEventListener('click', () => {
+            // 1. Rimuovi la classe 'selected' da tutti i cubi
+            colorCubes.forEach(c => c.classList.remove('selected'));
+
+            // 2. Aggiungi la classe 'selected' solo a quello cliccato
+            cube.classList.add('selected');
+        });
     });
 });
