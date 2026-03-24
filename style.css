@@ -327,10 +327,11 @@ input[type="password"]:focus {
 
 /* Effetto quando selezioni la barra di ricerca */
 .local-search:focus {
-    background-color: #f0e4db; /* Lo sfondo NON cambia più */
-    border-color: #f6b36b; /* Il bordo diventa arancione NotesGO */
-    box-shadow: 0 0 12px rgba(246, 179, 107, 0.6); /* Effetto luminoso (Glow) */
+    background-color: #f0e4db; 
+    border-color: #f6b36b; 
+    box-shadow: 0 0 12px rgba(246, 179, 107, 0.6); 
     outline: none;
+    color: var(--bg-dark); /* <--- NUOVA RIGA: Forza il testo scuro anche durante la scrittura! */
 }
 
 /* --- CARTE DEI GRUPPI --- */
