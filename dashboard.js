@@ -60,4 +60,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Disegniamo i gruppi all'avvio
     renderGroups(userGroups);
+
+    // --- NUOVA LOGICA: Filtro di ricerca locale ---
+    const localSearchInput = document.getElementById('local-search-input');
+
+    localSearchInput.addEventListener('input', (event) => {
+        // Prende quello che scrivi e lo trasforma in minuscolo
+        const termineRicerca = event.target.value.toLowerCase(); 
+        
+        // Filtra l'array dei gruppi
+        const gruppiFiltrati = userGroups.filter(gruppo => 
+            gruppo.name.toLowerCase().includes(termineRicerca)
+        );
+        
+        // Ridisegna la lista usando solo i gruppi che corrispondono alla ricerca!
+        renderGroups(gruppiFiltrati);
+    });
 });

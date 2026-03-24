@@ -298,8 +298,8 @@ input[type="password"]:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #e0d5ce; /* Linea di separazione elegante */
+    margin-bottom: 20px; /* Ridotto per fare spazio alla barra sotto */
+    border-bottom: 2px solid #e0d5ce;
     padding-bottom: 15px;
 }
 
@@ -309,21 +309,28 @@ input[type="password"]:focus {
     font-size: 2rem;
 }
 
+.filter-section {
+    margin-bottom: 30px; /* Spazio tra la barra e i gruppi */
+}
+
+/* Stile aggiornato per la barra di ricerca locale */
 .local-search {
-    color: var(--bg-dark);
-    background-color: white;
-    border: 1px solid #ccc;
-    width: 250px;
+    color: var(--bg-dark); /* Testo scuro e leggibile */
+    background-color: #f0e4db; /* Un beige leggermente più scuro del body */
+    border: 2px solid #e0d5ce; /* Bordo leggero a riposo */
+    width: 300px;
 }
 
 .local-search::placeholder {
-    color: #888;
+    color: #8c9fa8; /* Grigio-blu per non confondersi con il testo scritto */
 }
 
+/* Effetto quando selezioni la barra di ricerca */
 .local-search:focus {
-    background-color: white;
-    border-color: #f6b36b;
-    box-shadow: 0 0 8px rgba(246, 179, 107, 0.4);
+    background-color: #f0e4db; /* Lo sfondo NON cambia più */
+    border-color: #f6b36b; /* Il bordo diventa arancione NotesGO */
+    box-shadow: 0 0 12px rgba(246, 179, 107, 0.6); /* Effetto luminoso (Glow) */
+    outline: none;
 }
 
 /* --- CARTE DEI GRUPPI --- */
