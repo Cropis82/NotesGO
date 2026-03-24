@@ -4,6 +4,15 @@
     --text-light: #fff5ef;
     --accent-title: #fce5cd;
     --glow-shadow: #ff6b65;
+
+    --theme-bg: #fff5ef;               /* Sfondo generale del body */
+    --theme-surface: #f0e4db;          /* Sfondo elementi in rilievo (es. barra di ricerca) */
+    --theme-border: #e0d5ce;           /* Linee di separazione e bordi a riposo */
+    --theme-primary: #f6b36b;          /* Colore principale (Card gruppi, bordi attivi) */
+    --theme-primary-glow: rgba(246, 179, 107, 0.6); /* Ombra luminosa primaria */
+    --theme-placeholder: #8c9fa8;      /* Testo secondario/placeholder */
+    --theme-card-text: #132933;        /* Testo scuro dentro i box colorati */
+    --theme-online: #4caf50;           /* Pallino utente online */
 }
 
 body {
@@ -206,9 +215,9 @@ input[type="password"]:focus {
 
 /* Sovrascrive il body solo per la dashboard */
 .dashboard-body {
-    background-color: #fff5ef; /* Sfondo chiaro per il contrasto */
+    background-color: var(--theme-bg); 
     color: var(--bg-dark);
-    display: block; /* Toglie il flex center usato nel login */
+    display: block; 
     height: auto;
     min-height: 100vh;
 }
@@ -298,8 +307,8 @@ input[type="password"]:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px; /* Ridotto per fare spazio alla barra sotto */
-    border-bottom: 2px solid #e0d5ce;
+    margin-bottom: 20px; 
+    border-bottom: 2px solid var(--theme-border);
     padding-bottom: 15px;
 }
 
@@ -315,23 +324,23 @@ input[type="password"]:focus {
 
 /* Stile aggiornato per la barra di ricerca locale */
 .local-search {
-    color: var(--bg-dark); /* Testo scuro e leggibile */
-    background-color: #f0e4db; /* Un beige leggermente più scuro del body */
-    border: 2px solid #e0d5ce; /* Bordo leggero a riposo */
+    color: var(--bg-dark); 
+    background-color: var(--theme-surface); 
+    border: 2px solid var(--theme-border); 
     width: 300px;
 }
 
 .local-search::placeholder {
-    color: #8c9fa8; /* Grigio-blu per non confondersi con il testo scritto */
+    color: var(--theme-placeholder); 
 }
 
 /* Effetto quando selezioni la barra di ricerca */
 .local-search:focus {
-    background-color: #f0e4db; 
-    border-color: #f6b36b; 
-    box-shadow: 0 0 12px rgba(246, 179, 107, 0.6); 
+    background-color: var(--theme-surface); 
+    border-color: var(--theme-primary); 
+    box-shadow: 0 0 12px var(--theme-primary-glow); 
     outline: none;
-    color: var(--bg-dark); /* <--- NUOVA RIGA: Forza il testo scuro anche durante la scrittura! */
+    color: var(--bg-dark); 
 }
 
 /* --- CARTE DEI GRUPPI --- */
@@ -342,7 +351,7 @@ input[type="password"]:focus {
 }
 
 .group-card {
-    background-color: #f6b36b; /* L'arancione richiesto */
+    background-color: var(--theme-primary); 
     border-radius: 12px;
     padding: 20px 30px;
     display: flex;
@@ -361,7 +370,7 @@ input[type="password"]:focus {
 .group-name {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #132933; /* Scritta scura per alta leggibilità */
+    color: var(--theme-card-text); 
     margin: 0;
 }
 
@@ -370,7 +379,7 @@ input[type="password"]:focus {
     align-items: center;
     gap: 25px;
     font-size: 1.1rem;
-    color: #132933;
+    color: var(--theme-card-text);
     font-weight: 600;
 }
 
@@ -385,7 +394,7 @@ input[type="password"]:focus {
     display: inline-block;
     width: 12px;
     height: 12px;
-    background-color: #4caf50;
+    background-color: var(--theme-online);
     border-radius: 50%;
-    box-shadow: 0 0 5px #4caf50;
+    box-shadow: 0 0 5px var(--theme-online);
 }
