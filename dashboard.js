@@ -100,33 +100,107 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- GESTIONE SELEZIONE TEMA (Con salvataggio in localStorage) ---
-    const themeOptions = document.querySelectorAll('.theme-option');
+    // --- IL MOTORE DEI TEMI ---
+    
+    // 1. Definiamo le palette di colori per ogni tema
+    const themePalettes = {
+        default: {
+            '--theme-bg': '#fff5ef',
+            '--theme-surface': '#f0e4db',
+            '--theme-border': '#e0d5ce',
+            '--theme-primary': '#f6b36b',
+            '--theme-primary-glow': 'rgba(246, 179, 107, 0.6)',
+            '--theme-placeholder': '#8c9fa8',
+            '--theme-card-text': '#132933',
+            '--theme-text': '#132933',        // Testo scuro
+            '--theme-header-bg': '#132933'    // Header scuro
+        },
+        dark: {
+            '--theme-bg': '#1a1a2e',
+            '--theme-surface': '#16213e',
+            '--theme-border': '#0f3460',
+            '--theme-primary': '#e94560',     // Rosso corallo
+            '--theme-primary-glow': 'rgba(233, 69, 96, 0.6)',
+            '--theme-placeholder': '#536a82',
+            '--theme-card-text': '#ffffff',   // Testo bianco nelle carte
+            '--theme-text': '#e0e0e0',        // Testo chiaro per il body
+            '--theme-header-bg': '#0f3460'    // Header blu notte
+        },
+        ocean: {
+            '--theme-bg': '#e3f2fd',
+            '--theme-surface': '#bbdefb',
+            '--theme-border': '#90caf9',
+            '--theme-primary': '#2196f3',
+            '--theme-primary-glow': 'rgba(33, 150, 243, 0.6)',
+            '--theme-placeholder': '#64b5f6',
+            '--theme-card-text': '#ffffff',
+            '--theme-text': '#0d47a1',
+            '--theme-header-bg': '#0d47a1'
+        },
+        forest: {
+            '--theme-bg': '#f1f8e9',
+            '--theme-surface': '#dcedc8',
+            '--theme-border': '#c5e1a5',
+            '--theme-primary': '#8bc34a',
+            '--theme-primary-glow': 'rgba(139, 195, 74, 0.6)',
+            '--theme-placeholder': '#9ccc65',
+            '--theme-card-text': '#ffffff',
+            '--theme-text': '#33691e',
+            '--theme-header-bg': '#33691e'
+        },
+        minimal: {
+            '--theme-bg': '#ffffff',
+            '--theme-surface': '#f5f5f5',
+            '--theme-border': '#e0e0e0',
+            '--theme-primary': '#9e9e9e',
+            '--theme-primary-glow': 'rgba(158, 158, 158, 0.6)',
+            '--theme-placeholder': '#bdbdbd',
+            '--theme-card-text': '#ffffff',
+            '--theme-text': '#212121',
+            '--theme-header-bg': '#212121'
+        }
+    };
 
-    // 1. Controlla se c'è un tema salvato, altrimenti usa 'default'
+    // 2. Funzione per applicare i colori al CSS
+    function applyTheme(themeName) {
+        const palette = themePalettes[themeName];
+        if (!palette) return;
+
+        for (const [variable, color] of Object.entries(palette)) {
+            document.documentElement.style.setProperty(variable, color);
+        }
+    }
+
+    // 3. Gestione Selezione e Salvataggio (Aggiornata)
+    const themeOptions = document.querySelectorAll('.theme-option');
     const savedTheme = localStorage.getItem('notesgo_theme') || 'default';
+
+    // Applica subito il tema salvato quando apri la pagina
+    applyTheme(savedTheme);
 
     themeOptions.forEach(option => {
         const themeName = option.getAttribute('data-theme');
         const cube = option.querySelector('.color-cube');
         
-        // 2. Al caricamento, illumina il cubo del tema salvato
+        // Evidenzia il cubo giusto all'avvio
         if (themeName === savedTheme) {
             cube.classList.add('selected');
         } else {
             cube.classList.remove('selected');
         }
 
-        // 3. Quando clicchi su un nuovo cubo...
+        // Quando clicchi su un nuovo cubo...
         cube.addEventListener('click', () => {
             // Spegni tutti i cubi
             document.querySelectorAll('.color-cube').forEach(c => c.classList.remove('selected'));
-            
             // Accendi solo quello cliccato
             cube.classList.add('selected');
             
-            // Salva la nuova scelta nella memoria del browser!
+            // Salva la scelta
             localStorage.setItem('notesgo_theme', themeName);
+            
+            // APPLICA I COLORI ALL'ISTANTE!
+            applyTheme(themeName);
         });
     });
 });

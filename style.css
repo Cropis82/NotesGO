@@ -16,7 +16,7 @@
 }
 
 body {
-    background-color: var(--bg-dark);
+    background-color: var(--theme-text);
     color: var(--text-light);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
@@ -70,7 +70,7 @@ input[type="text"]:focus {
 button {
     padding: 12px 24px;
     background-color: var(--accent-title);
-    color: var(--bg-dark);
+    color: var(--theme-text);
     border: none;
     border-radius: 8px;
     font-size: 1rem;
@@ -216,7 +216,7 @@ input[type="password"]:focus {
 /* Sovrascrive il body solo per la dashboard */
 .dashboard-body {
     background-color: var(--theme-bg); 
-    color: var(--bg-dark);
+    color: var(--theme-text); /* PRIMA ERA: var(--bg-dark) */
     display: block; 
     height: auto;
     min-height: 100vh;
@@ -224,7 +224,7 @@ input[type="password"]:focus {
 
 /* Header stile App */
 .top-header {
-    background-color: var(--bg-dark); /* Il colore petrolio/scuro originale */
+    background-color: var(--theme-header-bg); /* PRIMA ERA: var(--bg-dark) */
     color: var(--text-light);
     padding: 15px 40px;
     display: flex;
@@ -314,7 +314,7 @@ input[type="password"]:focus {
 
 .main-header h2 {
     margin: 0;
-    color: var(--bg-dark);
+    color: var(--theme-text);
     font-size: 2rem;
 }
 
@@ -324,7 +324,7 @@ input[type="password"]:focus {
 
 /* Stile aggiornato per la barra di ricerca locale */
 .local-search {
-    color: var(--bg-dark); 
+    color: var(--theme-text); 
     background-color: var(--theme-surface); 
     border: 2px solid var(--theme-border); 
     width: 300px;
@@ -340,7 +340,7 @@ input[type="password"]:focus {
     border-color: var(--theme-primary); 
     box-shadow: 0 0 12px var(--theme-primary-glow); 
     outline: none;
-    color: var(--bg-dark); 
+    color: var(--theme-text); 
 }
 
 /* --- CARTE DEI GRUPPI --- */
@@ -445,7 +445,7 @@ input[type="password"]:focus {
 
 .modal-header h2 {
     margin: 0;
-    color: var(--bg-dark);
+    color: var(--theme-text);
 }
 
 .close-btn {
@@ -458,7 +458,7 @@ input[type="password"]:focus {
 }
 
 .close-btn:hover {
-    color: var(--bg-dark);
+    color: var(--theme-text);
 }
 
 .modal-body {
@@ -468,7 +468,7 @@ input[type="password"]:focus {
 .settings-section h3 {
     margin-top: 0;
     margin-bottom: 5px;
-    color: var(--bg-dark);
+    color: var(--theme-text);
 }
 
 .settings-desc {
@@ -496,7 +496,7 @@ input[type="password"]:focus {
 .theme-option span {
     font-size: 0.85rem;
     font-weight: bold;
-    color: var(--bg-dark);
+    color: var(--theme-text);
 }
 
 /* Il cubo base */
