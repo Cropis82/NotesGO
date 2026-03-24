@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Se non c'è nessun utente salvato, riportalo al login
     if (!currentUser) {
         window.location.href = 'index.html';
-        return; // Ferma l'esecuzione dello script
+        return; 
     }
 
     // Elementi UI per l'utente
@@ -13,32 +13,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logoutBtn = document.getElementById('logout-btn');
     const jsonOutput = document.getElementById('jsonOutput');
 
-    // 2. CARICAMENTO DATI DAL TINYDB
+    // --- SPOSTATO QUI: LOGICA DI LOGOUT ---
+    // Lo prepariamo prima, così se la riga 30 fallisce, il pulsante sa già cosa fare!
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('loggedUser');
+        window.location.href = 'index.html';
+    });
+
+    // 2. CARICAMENTO DATI DAL TINYDB (Url aggiornato!)
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/user/${currentUser}`);
+        const response = await fetch(`https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/user/${currentUser}`);
+        
         if (response.ok) {
             const data = await response.json();
             welcomeMessage.textContent = `Ciao, ${data.dati.username}!`;
-            
-            // Per farti vedere che funziona, stampiamo i dati dell'utente dal TinyDB nel box JSON
             jsonOutput.textContent = "Dati account caricati dal TinyDB:\n\n" + JSON.stringify(data.dati, null, 4);
         } else {
-            // Se c'è un errore (es. utente cancellato dal db), forza il logout
+            // Se l'utente non esiste più nel DB, forziamo l'uscita
             logoutBtn.click();
         }
     } catch (error) {
         welcomeMessage.textContent = `Errore di connessione`;
+        jsonOutput.textContent = "Impossibile caricare i dati dal server.";
     }
 
-    // 3. LOGICA DI LOGOUT
-    logoutBtn.addEventListener('click', () => {
-        // Strappa il tesserino
-        localStorage.removeItem('loggedUser');
-        // Torna alla pagina iniziale
-        window.location.href = 'index.html';
-    });
-
-    // 4. VECCHIA LOGICA DEL TESTER API (rimane invariata)
+    // 4. VECCHIA LOGICA DEL TESTER API
     const fetchBtn = document.getElementById('fetchBtn');
     const apiUrlInput = document.getElementById('apiUrl');
 
