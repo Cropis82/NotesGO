@@ -690,9 +690,7 @@ input[type="password"]:focus {
     text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Restituiamo lo stile al Logo NotesGO */
-#logo-link {
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+/* Assicuriamoci che il testo centrale nell'header sia sempre leggibile */
+.header-center-area span {
+    color: #ffffff !important; /* Bianco sta bene su tutti i tuoi --theme-header-bg scuri */
 }
