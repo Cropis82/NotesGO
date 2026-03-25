@@ -655,3 +655,23 @@ input[type="password"]:focus {
     margin: 15px 0;
     color: var(--theme-text);
 }
+
+/* Fix per il layout della pagina Gruppo */
+.group-page-body {
+    display: block !important; /* Disabilita il flexbox centrato del login */
+    background-color: var(--theme-bg);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.group-page-body .main-header {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.group-page-body .dashboard-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
