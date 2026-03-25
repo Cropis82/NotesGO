@@ -13,10 +13,13 @@
     --theme-placeholder: #8c9fa8;      /* Testo secondario/placeholder */
     --theme-card-text: #132933;        /* Testo scuro dentro i box colorati */
     --theme-online: #4caf50;           /* Pallino utente online */
+
+    --theme-text: #132933;             /* Testo scuro di default */
+    --theme-header-bg: #132933;        /* Header scuro di default */
 }
 
 body {
-    background-color: var(--theme-text);
+    background-color: var(--bg-dark); /* <--- CORRETTO: rimesso il colore scuro del login */
     color: var(--text-light);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
