@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-item" title="Membri totali">
                         <span>👥 ${membriTotali}</span>
                     </div>
-                    // Cambia questa parte dentro card.innerHTML:
                     <div class="stat-item" title="Membri online">
                         <span class="online-dot"></span>
                         <span>${group.online_count || 1}</span> 
