@@ -72,6 +72,30 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Impostazioni Gruppo</h2>
+                <button id="close-settings-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-group-name">Nome Gruppo</label>
+                    <input type="text" id="edit-group-name" class="modal-input" placeholder="Nuovo nome...">
+                </div>
+                <div class="form-group">
+                    <label for="edit-group-desc">Descrizione</label>
+                    <textarea id="edit-group-desc" class="modal-input" rows="3" placeholder="Nuova descrizione..." style="resize: vertical;"></textarea>
+                </div>
+                <button id="save-settings-btn" class="save-btn">💾 Salva Modifiche</button>
+
+                <hr class="danger-zone-hr">
+                <h3 class="danger-title">Zona Pericolosa</h3>
+                <button id="delete-group-btn" class="small-btn btn-danger" style="width: 100%;">🗑️ Elimina Definitivamente Gruppo</button>
+            </div>
+        </div>
+    </div>
+
     <script src="group.js"></script>
 </body>
 

@@ -44,6 +44,16 @@ class LeaveGroup(BaseModel):
     username: str
     group_id: str
 
+class UpdateGroupSettings(BaseModel):
+    username: str
+    group_id: str
+    name: str
+    description: str
+
+class DeleteGroup(BaseModel):
+    username: str
+    group_id: str
+
 @app.get("/api/test")
 def test_endpoint():
     return {"status": "successo", "messaggio": "Backend connesso correttamente!"}
@@ -240,3 +250,38 @@ def leave_group(data: LeaveGroup):
         return {"status": "successo", "messaggio": "Hai abbandonato il gruppo."}
     else:
         raise HTTPException(status_code=400, detail="Non fai parte di questo gruppo")
+
+# Rotta per aggiornare nome e descrizione
+@app.put("/api/group/settings")
+def update_group_settings(data: UpdateGroupSettings):
+    GroupQuery = Query()
+    result = groups_table.search(GroupQuery.id == data.group_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Gruppo non trovato")
+        
+    group = result[0]
+    
+    # Sicurezza: solo l'owner può modificare
+    if group['owner'] != data.username:
+        raise HTTPException(status_code=403, detail="Solo l'amministratore può modificare il gruppo")
+        
+    groups_table.update({'name': data.name, 'description': data.description}, GroupQuery.id == data.group_id)
+    return {"status": "successo"}
+
+# Rotta per eliminare il gruppo
+@app.delete("/api/group/delete")
+def delete_group(data: DeleteGroup):
+    GroupQuery = Query()
+    result = groups_table.search(GroupQuery.id == data.group_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Gruppo non trovato")
+        
+    group = result[0]
+    
+    if group['owner'] != data.username:
+        raise HTTPException(status_code=403, detail="Solo l'amministratore può eliminare il gruppo")
+        
+    groups_table.remove(GroupQuery.id == data.group_id)
+    return {"status": "successo"}

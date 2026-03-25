@@ -760,3 +760,66 @@ input[type="password"]:focus {
 .modal-body-center {
     text-align: center;
 }
+
+/* =========================================
+   STILI FORM E IMPOSTAZIONI GRUPPO
+   ========================================= */
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    color: var(--theme-text);
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid var(--theme-border);
+    border-radius: 5px;
+    background: var(--theme-bg);
+    color: var(--theme-text);
+    font-family: inherit;
+    transition: outline 0.2s;
+}
+
+.modal-input:focus {
+    outline: 2px solid var(--theme-primary);
+    border-color: transparent;
+}
+
+.save-btn {
+    width: 100%;
+    background-color: var(--theme-primary);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: opacity 0.2s;
+    margin-top: 10px;
+}
+
+.save-btn:hover {
+    opacity: 0.9;
+}
+
+.danger-zone-hr {
+    border: 0;
+    border-top: 1px dashed var(--theme-border);
+    margin: 25px 0 15px 0;
+}
+
+.danger-title {
+    color: #d9534f;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 1.1rem;
+}

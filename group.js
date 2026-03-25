@@ -142,6 +142,85 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // 7. Logica Impostazioni Gruppo (Solo Admin)
+    const settingsModal = document.getElementById('settings-modal');
+    const editGroupName = document.getElementById('edit-group-name');
+    const editGroupDesc = document.getElementById('edit-group-desc');
+    
+    // Apri modale e pre-compila i campi
+    settingsBtn.addEventListener('click', () => {
+        editGroupName.value = document.getElementById('exp-group-name').textContent;
+        const currentDesc = document.getElementById('exp-group-desc').textContent;
+        editGroupDesc.value = currentDesc === "Nessuna descrizione." ? "" : currentDesc;
+        settingsModal.classList.remove('hidden');
+    });
+
+    document.getElementById('close-settings-modal').addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+    });
+
+    // Salva modifiche
+    document.getElementById('save-settings-btn').addEventListener('click', async () => {
+        const newName = editGroupName.value.trim();
+        const newDesc = editGroupDesc.value.trim();
+
+        if (!newName) {
+            alert("Il nome del gruppo non può essere vuoto!");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${backendUrl}/api/group/settings`, {
+                method: 'PUT', // Usiamo PUT per gli aggiornamenti
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser,
+                    group_id: groupId,
+                    name: newName,
+                    description: newDesc
+                })
+            });
+
+            if (res.ok) {
+                // Aggiorna l'interfaccia senza ricaricare la pagina!
+                document.getElementById('body-group-name').textContent = newName;
+                document.getElementById('exp-group-name').textContent = newName;
+                document.getElementById('exp-group-desc').textContent = newDesc || "Nessuna descrizione.";
+                settingsModal.classList.add('hidden');
+            } else {
+                const err = await res.json();
+                alert("Errore: " + err.detail);
+            }
+        } catch (e) {
+            console.error("Errore salvataggio:", e);
+        }
+    });
+
+    // Elimina Gruppo
+    document.getElementById('delete-group-btn').addEventListener('click', async () => {
+        const confirmDelete = confirm("ATTENZIONE! Questa azione è irreversibile. Sei davvero sicuro di voler eliminare l'intero gruppo?");
+        
+        if (confirmDelete) {
+            try {
+                const res = await fetch(`${backendUrl}/api/group/delete`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser, group_id: groupId })
+                });
+
+                if (res.ok) {
+                    alert("Gruppo eliminato con successo.");
+                    window.location.href = 'dashboard.html';
+                } else {
+                    const err = await res.json();
+                    alert("Errore: " + err.detail);
+                }
+            } catch (e) {
+                console.error("Errore eliminazione:", e);
+            }
+        }
+    });
+
     // Mantieni vivo l'heartbeat anche in questa pagina!
     setInterval(async () => {
         if (!currentUser) return;
