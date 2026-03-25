@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from tinydb import TinyDB, Query
 import uuid
 import bcrypt # Nuova importazione per la criptazione
+import time
 
 app = FastAPI()
 
@@ -34,6 +35,9 @@ class GroupCreate(BaseModel):
     access: str
     permissions: str
     owner: str # Il creatore del gruppo
+
+class Heartbeat(BaseModel):
+    username: str
 
 @app.get("/api/test")
 def test_endpoint():
@@ -145,12 +149,41 @@ def create_group(group: GroupCreate):
     
     return {"status": "successo", "messaggio": f"Gruppo '{group.name}' creato!", "group_id": group_id}
 
+# 3. MODIFICHIAMO LA ROTTA DEI GRUPPI
 @app.get("/api/groups/{username}")
 def get_user_groups(username: str):
-    # Usiamo una funzione lambda per dire a TinyDB: 
-    # "Trova i gruppi in cui questo username è presente nella lista 'members'"
     GroupQuery = Query()
     user_groups = groups_table.search(GroupQuery.members.test(lambda members: username in members))
     
-    # Se l'utente non ha gruppi, restituiamo semplicemente una lista vuota
+    # --- NUOVA PARTE: Calcoliamo gli online ---
+    current_time = time.time()
+    SOGLIA_ONLINE = 120 # Se l'ultimo ping è stato entro 120 secondi (2 minuti), è online
+
+    for group in user_groups:
+        online_count = 0
+        
+        # Scorriamo i membri di quel gruppo
+        for member in group.get('members', []):
+            # Cerchiamo l'utente nel db per vedere il suo 'ultimo_accesso'
+            user_data = users_table.search(UserQuery.username == member)
+            if user_data:
+                ultimo_accesso = user_data[0].get('ultimo_accesso', 0)
+                
+                # Se la differenza tra l'ora attuale e l'ultimo accesso è minore della soglia
+                if current_time - ultimo_accesso <= SOGLIA_ONLINE:
+                    online_count += 1
+                    
+        # Aggiungiamo il conteggio calcolato direttamente all'oggetto gruppo che inviamo al frontend
+        group['online_count'] = online_count
+        
     return {"status": "successo", "gruppi": user_groups}
+
+@app.post("/api/heartbeat")
+def heartbeat(data: Heartbeat):
+    # Salviamo l'orario attuale in secondi (Unix Timestamp)
+    current_time = time.time()
+    
+    # Aggiorniamo l'utente nel db aggiungendo/modificando la voce 'ultimo_accesso'
+    users_table.update({'ultimo_accesso': current_time}, UserQuery.username == data.username)
+    
+    return {"status": "ok"}

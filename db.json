@@ -7,6 +7,14 @@
                 "tema": "default",
                 "notifiche": true
             }
+        },
+        "2": {
+            "username": "test",
+            "password": "$2b$12$GsPCUVkXoepoT9dZZwKVPu.H5D4wgpZnT4R9QTXHtC.oF/F03KHU6",
+            "impostazioni": {
+                "tema": "dark",
+                "notifiche": true
+            }
         }
     },
     "groups": {
@@ -18,7 +26,8 @@
             "permissions": "owner",
             "owner": "utente",
             "members": [
-                "utente"
+                "utente",
+                "test"
             ]
         }
     }

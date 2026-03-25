@@ -45,9 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-item" title="Membri totali">
                         <span>👥 ${membriTotali}</span>
                     </div>
+                    // Cambia questa parte dentro card.innerHTML:
                     <div class="stat-item" title="Membri online">
                         <span class="online-dot"></span>
-                        <span>1</span> </div>
+                        <span>${group.online_count || 1}</span> 
+                    </div>
                 </div>
             `;
 
@@ -170,15 +172,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert("🎉 " + data.messaggio); 
-                createGroupModal.classList.add('hidden'); 
-                
+                alert("🎉 " + data.messaggio);
+                createGroupModal.classList.add('hidden');
+
                 document.getElementById('group-name').value = '';
                 document.getElementById('group-desc').value = '';
-                
+
                 // --- NUOVA RIGA: Ricarica i gruppi per mostrare subito quello nuovo! ---
-                loadGroups(); 
-                
+                loadGroups();
+
             } else {
                 alert("Errore: " + data.detail);
             }
@@ -189,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- IL MOTORE DEI TEMI ---
-    
+
     // 1. Definiamo le palette di colori per ogni tema
     const themePalettes = {
         default: {
@@ -269,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     themeOptions.forEach(option => {
         const themeName = option.getAttribute('data-theme');
         const cube = option.querySelector('.color-cube');
-        
+
         // Evidenzia il cubo giusto all'avvio
         if (themeName === savedTheme) {
             cube.classList.add('selected');
@@ -284,10 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.color-cube').forEach(c => c.classList.remove('selected'));
             // Accendi solo quello cliccato
             cube.classList.add('selected');
-            
+
             // Salva la scelta in locale
             localStorage.setItem('notesgo_theme', themeName);
-            
+
             // APPLICA I COLORI ALL'ISTANTE!
             applyTheme(themeName);
 
@@ -296,9 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/update_theme', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        username: currentUser, 
-                        theme: themeName 
+                    body: JSON.stringify({
+                        username: currentUser,
+                        theme: themeName
                     })
                 });
                 const data = await response.json();
@@ -308,4 +310,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // --- SISTEMA DI HEARTBEAT (Utenti Online) ---
+    
+    // Funzione che invia il segnale al server
+    async function sendHeartbeat() {
+        if (!currentUser) return;
+        
+        try {
+            await fetch('https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/heartbeat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser })
+            });
+            // Non serve mostrare nulla, è un processo silenzioso in background
+        } catch (error) {
+            console.error("Errore Heartbeat:", error);
+        }
+    }
+
+    // 1. Manda subito un segnale appena apri la dashboard
+    sendHeartbeat();
+
+    // 2. Continua a mandarlo ogni 60 secondi (60000 millisecondi)
+    setInterval(sendHeartbeat, 60000);
+
+    // 3. Ricarica la lista dei gruppi ogni 60 secondi così il numero degli online
+    // si aggiorna visivamente senza che tu debba ricaricare la pagina con F5!
+    setInterval(loadGroups, 60000);
 });
