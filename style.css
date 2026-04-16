@@ -669,13 +669,15 @@ input[type="password"]:focus {
 
 /* Fix per il layout della pagina Gruppo */
 .group-page-body {
-    display: flex !important; /* Riattiviamo Flexbox per gestire le altezze */
+    display: flex !important; 
     flex-direction: column;
+    justify-content: flex-start !important; /* Disattiva il centraggio del login */
+    align-items: stretch !important;        /* Forza gli elementi a stare nei limiti dello schermo */
     background-color: var(--theme-bg);
     margin: 0;
     padding: 0;
     height: 100vh;
-    overflow: hidden; /* Impedisce alla pagina intera di scrollare */
+    overflow: hidden;
 }
 
 /* Fix dell'Header */
@@ -691,9 +693,11 @@ input[type="password"]:focus {
     flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    padding: 15px 20px; /* Margini esterni leggeri */
+    padding: 15px 20px; 
     box-sizing: border-box;
-    min-height: 0; /* Fondamentale per far apparire la scrollbar della board */
+    min-height: 0; 
+    min-width: 0; /* Magia Flexbox: impedisce al contenitore di superare lo schermo orizzontalmente */
+    width: 100%;
     overflow: hidden;
 }
 
@@ -856,6 +860,7 @@ input[type="password"]:focus {
     flex-grow: 1; 
     width: 100%; 
     min-height: 0; /* Fondamentale per mantenere la board dentro il box */
+    min-width: 0; /* Magia Flexbox parte 2 */
 
     padding: 20px;    
     box-sizing: border-box;
