@@ -297,12 +297,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Riceviamo tutti i task all'accesso
                 tasksData = payload;
                 renderBoard(); // Ridisegna la lavagna per far apparire i task
-            ;
+                ;
             case "task_created":
                 // Qualcuno (o noi) ha creato un nuovo task
                 tasksData.push(payload);
                 renderBoard();
-            ;
+                ;
             case "task_moved":
                 // Aggiorniamo la colonna del task spostato
                 const taskIndex = tasksData.findIndex(t => t.id === payload.task_id);
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     tasksData[taskIndex].column_id = payload.new_column_id;
                     renderBoard();
                 }
-            ;
+                ;
             case "task_deleted":
                 // Rimuoviamo il task dall'array
                 tasksData = tasksData.filter(t => t.id !== payload.task_id);
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (currentTaskInView && currentTaskInView.id === payload.task_id) {
                     document.getElementById('task-view-modal').classList.add('hidden');
                 }
-            ;
+                ;
         }
     };
 
@@ -391,29 +391,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // --- 4. DROPZONE SULLE COLONNE ---
             // Aggiungi questi listener all'elemento `.column-body` quando lo crei nel JS
-            /*
-                colBody.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
-            
-                colBody.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    try {
-                        const data = JSON.parse(e.dataTransfer.getData('application/json'));
-                        if (data.type === 'task') {
-                            const targetColumnId = col.id; // L'ID della colonna in cui stiamo droppando
-                            // MANDA MESSAGGIO AL WEBSOCKET PER AGGIORNARE IL TASK!
-                            ws.send(JSON.stringify({ 
-                                action: "move_task", 
-                                payload: { task_id: data.id, new_column_id: targetColumnId } 
-                            }));
+
+            colEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                try {
+                    const data = JSON.parse(e.dataTransfer.getData('application/json'));
+
+                    // Se stiamo droppando un TASK (e non una colonna)
+                    if (data.type === 'task') {
+                        const targetColumnId = col.id; // L'ID della colonna di destinazione
+
+                        // --- 1. AGGIORNAMENTO VISIVO ISTANTANEO (Addio effetto elastico!) ---
+                        const draggedTaskEl = document.querySelector(`[data-task-id="${data.id}"]`);
+                        if (draggedTaskEl) {
+                            colEl.appendChild(draggedTaskEl); // Sposta fisicamente l'HTML nella nuova colonna
                         }
-                    } catch (err) {}
-                });
-            */
+
+                        // --- 2. AGGIORNA L'ARRAY LOCALE ---
+                        const taskIndex = tasksData.findIndex(t => t.id === data.id);
+                        if (taskIndex !== -1) {
+                            // Se il task era già in questa colonna, non fare nulla
+                            if (tasksData[taskIndex].column_id === targetColumnId) return;
+
+                            tasksData[taskIndex].column_id = targetColumnId;
+                        }
+
+                        // --- 3. AVVISA IL SERVER ---
+                        ws.send(JSON.stringify({
+                            action: "move_task",
+                            payload: {
+                                task_id: data.id,
+                                new_column_id: targetColumnId
+                            }
+                        }));
+                    }
+                } catch (err) {
+                    console.error("Errore nel drop del task:", err);
+                }
+            });
         });
     }
 
@@ -602,5 +619,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Chiudi il modale
         taskModal.classList.add('hidden');
+    });
+    // --- FUNZIONE PER MASSIMIZZARE IL TASK ---
+    function openTaskViewModal(task) {
+        // 1. Salviamo il task nella variabile globale (ci servirà poi per modificarlo o eliminarlo)
+        currentTaskInView = task;
+
+        // 2. Riempiamo i campi del modale con i dati del task
+        document.getElementById('view-task-title').innerText = task.title;
+        document.getElementById('view-task-creator').innerText = task.creator;
+
+        // Se c'è una data la mostriamo, altrimenti scriviamo "Nessuna"
+        document.getElementById('view-task-due').innerText = task.due_date ? task.due_date : "Nessuna";
+
+        // Inseriamo la descrizione. Usiamo innerText per mantenere la sicurezza ed evitare bug con l'HTML
+        document.getElementById('view-task-desc').innerText = task.description || "Nessuna descrizione fornita per questo task.";
+
+        // 3. Mostriamo il modale togliendo la classe 'hidden'
+        document.getElementById('task-view-modal').classList.remove('hidden');
+    }
+
+    // Event Listener per chiudere il modale di visualizzazione
+    document.getElementById('close-task-view-modal').addEventListener('click', () => {
+        document.getElementById('task-view-modal').classList.add('hidden');
+        currentTaskInView = null; // Resettiamo la variabile
+    });
+
+    document.getElementById('delete-task-btn').addEventListener('click', () => {
+        if (!currentTaskInView) return;
+
+        if (confirm(`Sei sicuro di voler eliminare il task "${currentTaskInView.title}"?`)) {
+            // Avvisiamo il server
+            ws.send(JSON.stringify({
+                action: "delete_task",
+                payload: { task_id: currentTaskInView.id }
+            }));
+
+            // Chiudiamo il modale
+            document.getElementById('task-view-modal').classList.add('hidden');
+        }
     });
 });
