@@ -80,6 +80,10 @@ class ConnectionManager:
             for connection in self.active_connections[group_id]:
                 await connection.send_json(message)
 
+class JoinGroup(BaseModel):
+    username: str
+    group_id: str
+
 manager = ConnectionManager()
 
 @app.get("/api/test")
@@ -422,3 +426,20 @@ async def websocket_endpoint(websocket: WebSocket, group_id: str, username: str)
     except WebSocketDisconnect:
         manager.disconnect(websocket, group_id)
 
+@app.post("/api/groups/join")
+def join_group(data: JoinGroup):
+    GroupQuery = Query()
+    result = groups_table.search(GroupQuery.id == data.group_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Gruppo non trovato. Controlla il codice e riprova.")
+    
+    group = result[0]
+    
+    if data.username in group['members']:
+        raise HTTPException(status_code=400, detail="Sei già membro di questo gruppo.")
+    
+    group['members'].append(data.username)
+    groups_table.update({'members': group['members']}, GroupQuery.id == data.group_id)
+    
+    return {"status": "successo", "messaggio": f"Hai rejoined il gruppo '{group['name']}'!"}

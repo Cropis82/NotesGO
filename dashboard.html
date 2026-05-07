@@ -39,6 +39,10 @@
         </div>
     </main>
 
+    <!-- Bottone fisso in basso a sinistra -->
+    <button class="copy-id-btn" id="join-group-btn" title="Unisciti a un gruppo"
+        style="left: 20px; right: auto;">🔗</button>
+
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -113,6 +117,22 @@
                 </div>
 
                 <button id="submit-create-group" style="width: 100%; margin-top: 15px;">Crea Ora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale per inserire il codice -->
+    <div id="join-group-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Aggiungi Codice Gruppo</h2>
+                <button id="close-join-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body modal-body-center">
+                <p class="output-label">Incolla qui sotto il codice del gruppo a cui vuoi unirti.</p>
+                <input type="text" id="join-code-input" class="modal-input" placeholder="Incolla il codice...">
+                <button id="confirm-join-btn" class="save-btn" style="margin-top: 15px; width: 100%;">Unisciti</button>
+                <p id="join-message" class="message" style="margin-top: 10px;"></p>
             </div>
         </div>
     </div>

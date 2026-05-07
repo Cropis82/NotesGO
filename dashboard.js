@@ -187,6 +187,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- LOGICA UNISCITI AL GRUPPO ---
+    const joinGroupBtn = document.getElementById('join-group-btn');
+    const joinGroupModal = document.getElementById('join-group-modal');
+    const closeJoinModal = document.getElementById('close-join-modal');
+    const confirmJoinBtn = document.getElementById('confirm-join-btn');
+    const joinMessage = document.getElementById('join-message');
+
+    joinGroupBtn.addEventListener('click', () => {
+        document.getElementById('join-code-input').value = '';
+        joinMessage.textContent = '';
+        joinMessage.className = 'message';
+        joinGroupModal.classList.remove('hidden');
+    });
+
+    closeJoinModal.addEventListener('click', () => joinGroupModal.classList.add('hidden'));
+    joinGroupModal.addEventListener('click', (e) => {
+        if (e.target === joinGroupModal) joinGroupModal.classList.add('hidden');
+    });
+
+    confirmJoinBtn.addEventListener('click', async () => {
+        const code = document.getElementById('join-code-input').value.trim();
+        if (!code) {
+            joinMessage.textContent = 'Inserisci un codice.';
+            joinMessage.className = 'message error';
+            return;
+        }
+
+        try {
+            const response = await fetch('https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/groups/join', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser, group_id: code })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                joinMessage.textContent = '✅ ' + data.messaggio;
+                joinMessage.className = 'message success';
+                loadGroups(); // Aggiorna subito la lista
+                setTimeout(() => joinGroupModal.classList.add('hidden'), 1500);
+            } else {
+                joinMessage.textContent = '❌ ' + data.detail;
+                joinMessage.className = 'message error';
+            }
+        } catch (error) {
+            joinMessage.textContent = 'Errore di connessione al server.';
+            joinMessage.className = 'message error';
+        }
+    });
+
     // --- IL MOTORE DEI TEMI ---
 
     // 1. Definiamo le palette di colori per ogni tema
@@ -309,11 +360,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- SISTEMA DI HEARTBEAT (Utenti Online) ---
-    
+
     // Funzione che invia il segnale al server
     async function sendHeartbeat() {
         if (!currentUser) return;
-        
+
         try {
             await fetch('https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/heartbeat', {
                 method: 'POST',
