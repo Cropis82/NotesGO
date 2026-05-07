@@ -297,33 +297,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderBoard();
                 break;
             case "init_tasks":
-                // Riceviamo tutti i task all'accesso
                 tasksData = payload;
-                renderBoard(); // Ridisegna la lavagna per far apparire i task
-                ;
+                renderBoard();
+                break;
             case "task_created":
-                // Qualcuno (o noi) ha creato un nuovo task
                 tasksData.push(payload);
                 renderBoard();
-                ;
+                break;
             case "task_moved":
-                // Aggiorniamo la colonna del task spostato
                 const taskIndex = tasksData.findIndex(t => t.id === payload.task_id);
                 if (taskIndex !== -1) {
                     tasksData[taskIndex].column_id = payload.new_column_id;
                     renderBoard();
                 }
-                ;
+                break;
             case "task_deleted":
-                // Rimuoviamo il task dall'array
                 tasksData = tasksData.filter(t => t.id !== payload.task_id);
                 renderBoard();
-
-                // Se stavamo guardando proprio quel task, chiudiamo il modale
                 if (currentTaskInView && currentTaskInView.id === payload.task_id) {
                     document.getElementById('task-view-modal').classList.add('hidden');
                 }
-                ;
+                break;
         }
     };
 
@@ -331,31 +325,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.warn("WebSocket disconnesso. Implementare la riconnessione automatica in futuro.");
     };
 
+    // Listeners per il modale di conferma eliminazione colonna (fuori da renderBoard!)
+    const confirmDeleteColModal = document.getElementById('confirm-delete-col-modal');
+    document.getElementById('close-confirm-delete-col').addEventListener('click', () => {
+        confirmDeleteColModal.classList.add('hidden');
+        pendingDeleteColId = null;
+    });
+    document.getElementById('cancel-delete-col-btn').addEventListener('click', () => {
+        confirmDeleteColModal.classList.add('hidden');
+        pendingDeleteColId = null;
+    });
+    confirmDeleteColModal.addEventListener('click', (e) => {
+        if (e.target === confirmDeleteColModal) {
+            confirmDeleteColModal.classList.add('hidden');
+            pendingDeleteColId = null;
+        }
+    });
+    document.getElementById('confirm-delete-col-btn').addEventListener('click', () => {
+        if (pendingDeleteColId) {
+            ws.send(JSON.stringify({ action: "delete_column", payload: { id: pendingDeleteColId } }));
+            pendingDeleteColId = null;
+        }
+        confirmDeleteColModal.classList.add('hidden');
+    });
+
     // Renderizza le colonne nell'HTML
     function renderBoard() {
-        const confirmDeleteColModal = document.getElementById('confirm-delete-col-modal');
-        document.getElementById('close-confirm-delete-col').addEventListener('click', () => {
-            confirmDeleteColModal.classList.add('hidden');
-            pendingDeleteColId = null;
-        });
-        document.getElementById('cancel-delete-col-btn').addEventListener('click', () => {
-            confirmDeleteColModal.classList.add('hidden');
-            pendingDeleteColId = null;
-        });
-        confirmDeleteColModal.addEventListener('click', (e) => {
-            if (e.target === confirmDeleteColModal) {
-                confirmDeleteColModal.classList.add('hidden');
-                pendingDeleteColId = null;
-            }
-        });
-        document.getElementById('confirm-delete-col-btn').addEventListener('click', () => {
-            if (pendingDeleteColId) {
-                ws.send(JSON.stringify({ action: "delete_column", payload: { id: pendingDeleteColId } }));
-                pendingDeleteColId = null;
-            }
-            confirmDeleteColModal.classList.add('hidden');
-        });
-
         // Rimuovi tutte le colonne esistenti ma mantieni il bottone "+"
         const existingCols = document.querySelectorAll('.kanban-column');
         existingCols.forEach(col => col.remove());
@@ -383,7 +378,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="column-body" style="padding: 10px; flex-grow: 1;"></div>
             `;
 
-            renderTasksForColumn(col.id, colEl);
+            const columnBodyForTasks = colEl.querySelector('.column-body');
+            renderTasksForColumn(col.id, columnBodyForTasks);
 
             // ... (I tuoi vecchi event listener per Drag&Drop e Bottoni rimangono uguali qui) ...
             colEl.addEventListener('dragstart', handleDragStart);
