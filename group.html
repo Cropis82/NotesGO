@@ -32,10 +32,12 @@
         </div>
     </div>
 
-   <main class="dashboard-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%;">
+    <main class="dashboard-container">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%;">
             <h2 id="body-group-name" style="margin: 0;">Caricamento...</h2>
-            <button id="global-add-task-btn" class="save-btn" style="width: auto; margin-top: 0; padding: 10px 20px;">➕ Nuovo Task</button>
+            <button id="global-add-task-btn" class="save-btn" style="width: auto; margin-top: 0; padding: 10px 20px;">➕
+                Nuovo Task</button>
         </div>
 
         <div id="kanban-board" class="kanban-board">
@@ -163,15 +165,37 @@
                 <button id="close-task-view-modal" class="close-btn">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--theme-placeholder);">
-                    <span>👤 Creato da: <strong id="view-task-creator" style="color: var(--theme-text);"></strong></span>
+                <div
+                    style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--theme-placeholder);">
+                    <span>👤 Creato da: <strong id="view-task-creator"
+                            style="color: var(--theme-text);"></strong></span>
                     <span>🕒 Scadenza: <strong id="view-task-due" style="color: var(--theme-text);"></strong></span>
                 </div>
-                <div class="json-box" id="view-task-desc" style="background: var(--theme-surface); border: 1px solid var(--theme-border); min-height: 100px; color: var(--theme-text); font-family: inherit;">
-                    </div>
+                <div class="json-box" id="view-task-desc"
+                    style="background: var(--theme-surface); border: 1px solid var(--theme-border); min-height: 100px; color: var(--theme-text); font-family: inherit;">
+                </div>
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="edit-task-btn" class="save-btn" style="background-color: var(--theme-primary);">✏️ Modifica</button>
+                    <button id="edit-task-btn" class="save-btn" style="background-color: var(--theme-primary);">✏️
+                        Modifica</button>
                     <button id="delete-task-btn" class="save-btn btn-danger">🗑️ Elimina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-delete-col-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Elimina Colonna</h2>
+                <button id="close-confirm-delete-col" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="output-label">Vuoi davvero eliminare questa colonna e tutto il suo contenuto? L'operazione è
+                    irreversibile.</p>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="confirm-delete-col-btn" class="save-btn btn-danger" style="flex: 1;">🗑️ Sì,
+                        elimina</button>
+                    <button id="cancel-delete-col-btn" class="small-btn" style="flex: 1;">Annulla</button>
                 </div>
             </div>
         </div>

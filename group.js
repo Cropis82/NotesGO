@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
+
+    // Near your other "let" declarations at the top of the file
+    let pendingDeleteColId = null;
     // 1. Controlli base e Tema
     const currentUser = localStorage.getItem('loggedUser');
     if (!currentUser) {
@@ -330,6 +333,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Renderizza le colonne nell'HTML
     function renderBoard() {
+        const confirmDeleteColModal = document.getElementById('confirm-delete-col-modal');
+        document.getElementById('close-confirm-delete-col').addEventListener('click', () => {
+            confirmDeleteColModal.classList.add('hidden');
+            pendingDeleteColId = null;
+        });
+        document.getElementById('cancel-delete-col-btn').addEventListener('click', () => {
+            confirmDeleteColModal.classList.add('hidden');
+            pendingDeleteColId = null;
+        });
+        confirmDeleteColModal.addEventListener('click', (e) => {
+            if (e.target === confirmDeleteColModal) {
+                confirmDeleteColModal.classList.add('hidden');
+                pendingDeleteColId = null;
+            }
+        });
+        document.getElementById('confirm-delete-col-btn').addEventListener('click', () => {
+            if (pendingDeleteColId) {
+                ws.send(JSON.stringify({ action: "delete_column", payload: { id: pendingDeleteColId } }));
+                pendingDeleteColId = null;
+            }
+            confirmDeleteColModal.classList.add('hidden');
+        });
+
         // Rimuovi tutte le colonne esistenti ma mantieni il bottone "+"
         const existingCols = document.querySelectorAll('.kanban-column');
         existingCols.forEach(col => col.remove());
@@ -368,9 +394,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             colEl.querySelector('.edit-col-btn').addEventListener('click', () => openColumnModal(col));
             colEl.querySelector('.delete-col-btn').addEventListener('click', () => {
-                if (confirm("Vuoi davvero eliminare questa colonna e tutto il suo contenuto?")) {
-                    ws.send(JSON.stringify({ action: "delete_column", payload: { id: col.id } }));
-                }
+                pendingDeleteColId = col.id;
+                confirmDeleteColModal.classList.remove('hidden');
             });
 
             // 1. Inseriamo la colonna nel DOM (Fondamentale farlo PRIMA di misurare)
