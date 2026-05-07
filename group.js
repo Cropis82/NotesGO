@@ -510,21 +510,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function handleDragOver(e) {
-        if (e.preventDefault) e.preventDefault(); // Necessario per permettere il drop
+        // If it's a task being dragged, let the column-body handler deal with it
+        if (e.dataTransfer.types.includes('application/json')) return;
+        if (e.preventDefault) e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         this.classList.add('drag-over');
         return false;
     }
 
+
     function handleDragLeave(e) {
-        this.classList.remove('drag-over');
+        // Only remove if the related target is outside this column
+        if (!this.contains(e.relatedTarget)) {
+            this.classList.remove('drag-over');
+        }
     }
 
     function handleDrop(e) {
+        // If it's a task being dragged, ignore — column-body handles it
+        if (e.dataTransfer.types.includes('application/json')) return;
         if (e.stopPropagation) e.stopPropagation();
 
         if (dragSrcEl !== this) {
-            // Scambia visivamente gli elementi per reattività immediata
             const parent = this.parentNode;
             const srcNext = dragSrcEl.nextSibling;
             const thisNext = this.nextSibling;
@@ -537,13 +544,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 parent.insertBefore(dragSrcEl, this);
             }
 
-            // Calcola il nuovo ordine leggendo il DOM
             const newOrderIds = [];
             document.querySelectorAll('.kanban-column').forEach(col => {
                 newOrderIds.push(col.getAttribute('data-id'));
             });
 
-            // Invia al server il nuovo ordine
             ws.send(JSON.stringify({ action: "reorder_columns", payload: { order: newOrderIds } }));
         }
         return false;
@@ -606,8 +611,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // DRAG & DROP DEI TASK
             taskEl.addEventListener('dragstart', (e) => {
-                e.stopPropagation(); // IMPORTANTE: Blocca il drag della colonna genitore!
+                e.stopPropagation();
                 e.dataTransfer.setData('application/json', JSON.stringify({ type: 'task', id: task.id }));
+                e.dataTransfer.setData('text/plain', 'task'); // helps with type detection
                 setTimeout(() => taskEl.classList.add('is-dragging'), 0);
             });
 
