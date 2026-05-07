@@ -431,7 +431,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // --- 1. AGGIORNAMENTO VISIVO ISTANTANEO (Addio effetto elastico!) ---
                         const draggedTaskEl = document.querySelector(`[data-task-id="${data.id}"]`);
                         if (draggedTaskEl) {
-                            colEl.appendChild(draggedTaskEl); // Sposta fisicamente l'HTML nella nuova colonna
+                            const targetBody = colEl.querySelector('.column-body');
+                            targetBody.appendChild(draggedTaskEl);
                         }
 
                         // --- 2. AGGIORNA L'ARRAY LOCALE ---
