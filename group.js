@@ -416,8 +416,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // --- 4. DROPZONE SULLE COLONNE ---
             // Aggiungi questi listener all'elemento `.column-body` quando lo crei nel JS
-
-            colEl.addEventListener('drop', (e) => {
+            const columnBody = colEl.querySelector('.column-body');
+            columnBody.addEventListener('drop', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -456,6 +456,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } catch (err) {
                     console.error("Errore nel drop del task:", err);
                 }
+            });
+
+            columnBody.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
             });
         });
     }
