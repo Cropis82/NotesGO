@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Near your other "let" declarations at the top of the file
     let pendingDeleteColId = null;
+    let canWrite = false;
     // 1. Controlli base e Tema
     const currentUser = localStorage.getItem('loggedUser');
     if (!currentUser) {
@@ -51,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (response.ok) {
             const group = data.gruppo;
-            const canWrite = group.permissions === 'all' || group.owner === currentUser;
+            canWrite = group.permissions === 'all' || group.owner === currentUser;
 
             if (!canWrite) {
                 // Nascondi tutti i bottoni di scrittura
