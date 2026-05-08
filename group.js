@@ -51,6 +51,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (response.ok) {
             const group = data.gruppo;
+            const canWrite = group.permissions === 'all' || group.owner === currentUser;
+
+            if (!canWrite) {
+                // Nascondi tutti i bottoni di scrittura
+                document.getElementById('global-add-task-btn').style.display = 'none';
+                document.getElementById('add-column-btn').style.display = 'none';
+                document.getElementById('delete-task-btn').style.display = 'none';
+            }
 
             // Popola l'interfaccia
             groupNameBody.textContent = group.name;
@@ -362,7 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const colEl = document.createElement('div');
             colEl.className = 'kanban-column';
             colEl.setAttribute('data-id', col.id);
-            colEl.draggable = true;
+            colEl.draggable = canWrite;
 
             // Nuova struttura HTML con il contenitore per il titolo
             colEl.innerHTML = `
@@ -370,10 +378,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="title-container">
                         <span class="column-title-text">${col.title}</span>
                     </div>
+                    ${canWrite ? `
                     <div class="column-actions">
                         <button class="column-btn edit-col-btn" title="Modifica">✏️</button>
                         <button class="column-btn delete-col-btn" title="Elimina">🗑️</button>
-                    </div>
+                    </div>` : ''}
                 </div>
                 <div class="column-body" style="padding: 10px; flex-grow: 1;"></div>
             `;
@@ -610,17 +619,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
             // DRAG & DROP DEI TASK
-            taskEl.addEventListener('dragstart', (e) => {
-                e.stopPropagation();
-                e.dataTransfer.setData('application/json', JSON.stringify({ type: 'task', id: task.id }));
-                e.dataTransfer.setData('text/plain', 'task'); // helps with type detection
-                setTimeout(() => taskEl.classList.add('is-dragging'), 0);
-            });
+            if (canWrite) {
+                taskEl.addEventListener('dragstart', (e) => {
+                    e.stopPropagation();
+                    e.dataTransfer.setData('application/json', JSON.stringify({ type: 'task', id: task.id }));
+                    e.dataTransfer.setData('text/plain', 'task'); // helps with type detection
+                    setTimeout(() => taskEl.classList.add('is-dragging'), 0);
+                });
 
-            taskEl.addEventListener('dragend', (e) => {
-                e.stopPropagation();
-                taskEl.classList.remove('is-dragging');
-            });
+                taskEl.addEventListener('dragend', (e) => {
+                    e.stopPropagation();
+                    taskEl.classList.remove('is-dragging');
+                });
+            }
+
 
             // CLICK PER VISUALIZZARE I DETTAGLI
             taskEl.addEventListener('click', () => openTaskViewModal(task));
