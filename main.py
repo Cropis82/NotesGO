@@ -195,6 +195,24 @@ def create_group(group: GroupCreate):
     
     return {"status": "successo", "messaggio": f"Gruppo '{group.name}' creato!", "group_id": group_id}
 
+@app.get("/api/groups/search")
+def search_groups(q: str = "", username: str = ""):
+    all_groups = groups_table.all()
+    results = []
+    for group in all_groups:
+        if group.get('access') != 'public':
+            continue
+        if username in group.get('members', []):
+            continue  # Nascondi gruppi in cui sei già membro
+        if q.lower() in group['name'].lower():
+            results.append({
+                "id": group["id"],
+                "name": group["name"],
+                "description": group.get("description", ""),
+                "members_count": len(group.get("members", []))
+            })
+    return {"groups": results}
+
 # 3. MODIFICHIAMO LA ROTTA DEI GRUPPI
 @app.get("/api/groups/{username}")
 def get_user_groups(username: str):
@@ -444,20 +462,7 @@ def join_group(data: JoinGroup):
     
     return {"status": "successo", "messaggio": f"Hai rejoined il gruppo '{group['name']}'!"}
 
-@app.get("/api/groups/search")
-def search_groups(q: str = "", username: str = ""):
+@app.get("/api/debug/groups")
+def debug_groups():
     all_groups = groups_table.all()
-    results = []
-    for group in all_groups:
-        if group.get('access') != 'public':
-            continue
-        if username in group.get('members', []):
-            continue  # Nascondi gruppi in cui sei già membro
-        if q.lower() in group['name'].lower():
-            results.append({
-                "id": group["id"],
-                "name": group["name"],
-                "description": group.get("description", ""),
-                "members_count": len(group.get("members", []))
-            })
-    return {"groups": results}
+    return {"groups": all_groups}
