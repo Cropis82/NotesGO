@@ -78,396 +78,379 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Popola la lista membri
             const membersContainer = document.getElementById('members-container');
+
             group.membri_dettagliati.forEach(member => {
                 const isMod = (group.moderators || []).includes(member.username);
                 const isOnline = member.online;
+                const isOwner = member.username === group.owner;
+                const isCurrentUserOwner = group.owner === currentUser;
+
+                const actionsHtml = (!isOwner && isCurrentUserOwner) ? `
+                    <div style="display: flex; gap: 5px; margin-left: auto;">
+                        <button class="small-btn role-toggle-btn" 
+                            data-user="${member.username}" 
+                            data-current="${isMod ? 'moderator' : 'member'}"
+                            style="font-size: 0.7rem; padding: 2px 6px;">
+                            ${isMod ? '🛡️ Rimuovi' : '🛡️ Mod'}
+                        </button>
+                        <button class="small-btn kick-btn" 
+                           data-user="${member.username}"
+                            style="font-size: 0.7rem; padding: 2px 6px; background: #e94560;">
+                            👢 Kick
+                       </button>
+                   </div>
+               ` : '';
+
                 membersContainer.innerHTML += `
-                    <div class="member-item">
-                        <span class="online-dot" style="background-color: ${isOnline ? '#4CAF50' : '#888'};"></span>
-                        <span style="margin-left: 10px; color: var(--theme-text); font-weight: bold;">
-                            ${member.username} ${member.username === group.owner ? '👑' : ''} ${isMod ? '🛡️' : ''}
-                        </span>
-                    </div>
-                `;
+                    <div class="member-item" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center;">
+                            <span class="online-dot" style="background-color: ${isOnline ? '#4CAF50' : '#888'};"></span>
+                           <span style="margin-left: 10px; color: var(--theme-text); font-weight: bold;">
+                                ${member.username}
+                                ${isOwner ? '👑' : ''}
+                               ${isMod ? '🛡️' : ''}
+                           </span>
+                        </div>
+                        ${actionsHtml}
+                   </div>
+               `;
             });
 
-            // Subito dopo aver popolato members-container
-            if (group.owner === currentUser) {
-                document.getElementById('manage-members-section').classList.remove('hidden');
-                const manageList = document.getElementById('manage-members-list');
+            // Ruoli
+            membersContainer.querySelectorAll('.role-toggle-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const targetUser = btn.dataset.user;
+                    const newRole = btn.dataset.current === 'moderator' ? 'member' : 'moderator';
 
-                group.membri_dettagliati.forEach(member => {
-                    const isMod = (group.moderators || []).includes(member.username);
-                    const isOnline = member.online;
-                    const isOwner = member.username === group.owner;
-                    const isCurrentUserOwner = group.owner === currentUser;
-
-                    const actionsHtml = (!isOwner && isCurrentUserOwner) ? `
-                        <div style="display: flex; gap: 5px; margin-left: auto;">
-                            <button class="small-btn role-toggle-btn" 
-                                data-user="${member.username}" 
-                                data-current="${isMod ? 'moderator' : 'member'}"
-                                style="font-size: 0.7rem; padding: 2px 6px;">
-                                ${isMod ? '🛡️ Rimuovi' : '🛡️ Mod'}
-                            </button>
-                            <button class="small-btn kick-btn" 
-                               data-user="${member.username}"
-                                style="font-size: 0.7rem; padding: 2px 6px; background: #e94560;">
-                                👢 Kick
-                           </button>
-                       </div>
-                   ` : '';
-
-                    membersContainer.innerHTML += `
-                        <div class="member-item" style="justify-content: space-between;">
-                            <div style="display: flex; align-items: center;">
-                                <span class="online-dot" style="background-color: ${isOnline ? '#4CAF50' : '#888'};"></span>
-                               <span style="margin-left: 10px; color: var(--theme-text); font-weight: bold;">
-                                    ${member.username}
-                                    ${isOwner ? '👑' : ''}
-                                   ${isMod ? '🛡️' : ''}
-                               </span>
-                            </div>
-                            ${actionsHtml}
-                       </div>
-                   `;
-                });
-
-                // Ruoli
-                membersContainer.querySelectorAll('.role-toggle-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const targetUser = btn.dataset.user;
-                        const newRole = btn.dataset.current === 'moderator' ? 'member' : 'moderator';
-
-                        const res = await fetch(`${backendUrl}/api/group/role`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ requester: currentUser, group_id: groupId, target_user: targetUser, role: newRole })
-                        });
-
-                        if (res.ok) {
-                            btn.dataset.current = newRole;
-                            btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
-                            // Aggiorna il badge nel nome
-                            const nameSpan = btn.closest('.member-item').querySelector('span[style]');
-                            const baseName = targetUser;
-                            nameSpan.innerHTML = `${baseName} ${newRole === 'moderator' ? '🛡️' : ''}`;
-                        } else {
-                            const err = await res.json();
-                            alert("Errore: " + err.detail);
-                        }
+                    const res = await fetch(`${backendUrl}/api/group/role`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ requester: currentUser, group_id: groupId, target_user: targetUser, role: newRole })
                     });
+
+                    if (res.ok) {
+                        btn.dataset.current = newRole;
+                        btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
+                        // Aggiorna il badge nel nome
+                        const nameSpan = btn.closest('.member-item').querySelector('span[style]');
+                        const baseName = targetUser;
+                        nameSpan.innerHTML = `${baseName} ${newRole === 'moderator' ? '🛡️' : ''}`;
+                    } else {
+                        const err = await res.json();
+                        alert("Errore: " + err.detail);
+                    }
                 });
+            });
 
-                // Kick
-                membersContainer.querySelectorAll('.kick-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const targetUser = btn.dataset.user;
+            // Kick
+            membersContainer.querySelectorAll('.kick-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const targetUser = btn.dataset.user;
 
-                        const res = await fetch(`${backendUrl}/api/groups/leave`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ username: targetUser, group_id: groupId })
-                        });
-
-                        if (res.ok) {
-                            btn.closest('.member-item').remove();
-                        } else {
-                            const err = await res.json();
-                            alert("Errore: " + err.detail);
-                        }
+                    const res = await fetch(`${backendUrl}/api/groups/leave`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: targetUser, group_id: groupId })
                     });
-                });
-            }
 
-        } else {
-            alert("Errore: " + data.detail);
-            window.location.href = 'dashboard.html';
+                    if (res.ok) {
+                        btn.closest('.member-item').remove();
+                    } else {
+                        const err = await res.json();
+                        alert("Errore: " + err.detail);
+                    }
+                });
+            });
         }
-    } catch (error) {
-        console.error("Errore caricamento:", error);
+
+    } else {
+        alert("Errore: " + data.detail);
+        window.location.href = 'dashboard.html';
+    }
+} catch (error) {
+    console.error("Errore caricamento:", error);
+}
+
+// 4. Animazione Header Espanso
+const expandTrigger = document.getElementById('header-expand-trigger');
+const expandedInfo = document.getElementById('expanded-info');
+const hintText = document.getElementById('header-hint-text'); // Ora peschiamo l'elemento esatto
+let isExpanded = false;
+
+expandTrigger.addEventListener('click', () => {
+    isExpanded = !isExpanded;
+    if (isExpanded) {
+        expandedInfo.classList.add('active');
+        hintText.textContent = '(Clicca per chiudere) ▲';
+        hintText.style.opacity = '1';
+    } else {
+        expandedInfo.classList.remove('active');
+        hintText.textContent = '(Clicca qui per info gruppo) ▼';
+        hintText.style.opacity = '0.6';
+    }
+});
+
+// 5. Logica Copia ID
+const showIdBtn = document.getElementById('show-id-btn');
+const idModal = document.getElementById('id-modal');
+
+showIdBtn.addEventListener('click', () => idModal.classList.remove('hidden'));
+document.getElementById('close-id-modal').addEventListener('click', () => idModal.classList.add('hidden'));
+
+// Copia negli appunti cliccando l'ID
+groupIdDisplay.addEventListener('click', () => {
+    navigator.clipboard.writeText(groupId).then(() => {
+        const msg = document.getElementById('copy-success-msg');
+        msg.style.opacity = '1';
+        setTimeout(() => msg.style.opacity = '0', 2000); // Scompare dopo 2 sec
+    });
+});
+
+// 6. Logica Abbandona Gruppo
+const leaveBtn = document.getElementById('leave-group-btn');
+const leaveModal = document.getElementById('leave-modal');
+
+leaveBtn.addEventListener('click', () => leaveModal.classList.remove('hidden'));
+document.getElementById('close-leave-modal').addEventListener('click', () => leaveModal.classList.add('hidden'));
+
+document.getElementById('confirm-leave-btn').addEventListener('click', async () => {
+    try {
+        const res = await fetch(`${backendUrl}/api/groups/leave`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser, group_id: groupId })
+        });
+        if (res.ok) {
+            window.location.href = 'dashboard.html'; // Torna alla home dopo l'uscita
+        } else {
+            alert("Errore durante l'uscita dal gruppo.");
+        }
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+// 7. Logica Impostazioni Gruppo (Solo Admin)
+const settingsModal = document.getElementById('settings-modal');
+const editGroupName = document.getElementById('edit-group-name');
+const editGroupDesc = document.getElementById('edit-group-desc');
+
+// Apri modale e pre-compila i campi
+settingsBtn.addEventListener('click', () => {
+    editGroupName.value = document.getElementById('exp-group-name').textContent;
+    const currentDesc = document.getElementById('exp-group-desc').textContent;
+    editGroupDesc.value = currentDesc === "Nessuna descrizione." ? "" : currentDesc;
+    settingsModal.classList.remove('hidden');
+});
+
+document.getElementById('close-settings-modal').addEventListener('click', () => {
+    settingsModal.classList.add('hidden');
+});
+
+// Salva modifiche
+document.getElementById('save-settings-btn').addEventListener('click', async () => {
+    const newName = editGroupName.value.trim();
+    const newDesc = editGroupDesc.value.trim();
+
+    if (!newName) {
+        alert("Il nome del gruppo non può essere vuoto!");
+        return;
     }
 
-    // 4. Animazione Header Espanso
-    const expandTrigger = document.getElementById('header-expand-trigger');
-    const expandedInfo = document.getElementById('expanded-info');
-    const hintText = document.getElementById('header-hint-text'); // Ora peschiamo l'elemento esatto
-    let isExpanded = false;
-
-    expandTrigger.addEventListener('click', () => {
-        isExpanded = !isExpanded;
-        if (isExpanded) {
-            expandedInfo.classList.add('active');
-            hintText.textContent = '(Clicca per chiudere) ▲';
-            hintText.style.opacity = '1';
-        } else {
-            expandedInfo.classList.remove('active');
-            hintText.textContent = '(Clicca qui per info gruppo) ▼';
-            hintText.style.opacity = '0.6';
-        }
-    });
-
-    // 5. Logica Copia ID
-    const showIdBtn = document.getElementById('show-id-btn');
-    const idModal = document.getElementById('id-modal');
-
-    showIdBtn.addEventListener('click', () => idModal.classList.remove('hidden'));
-    document.getElementById('close-id-modal').addEventListener('click', () => idModal.classList.add('hidden'));
-
-    // Copia negli appunti cliccando l'ID
-    groupIdDisplay.addEventListener('click', () => {
-        navigator.clipboard.writeText(groupId).then(() => {
-            const msg = document.getElementById('copy-success-msg');
-            msg.style.opacity = '1';
-            setTimeout(() => msg.style.opacity = '0', 2000); // Scompare dopo 2 sec
+    try {
+        const res = await fetch(`${backendUrl}/api/group/settings`, {
+            method: 'PUT', // Usiamo PUT per gli aggiornamenti
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser,
+                group_id: groupId,
+                name: newName,
+                description: newDesc
+            })
         });
-    });
 
-    // 6. Logica Abbandona Gruppo
-    const leaveBtn = document.getElementById('leave-group-btn');
-    const leaveModal = document.getElementById('leave-modal');
+        if (res.ok) {
+            // Aggiorna l'interfaccia senza ricaricare la pagina!
+            document.getElementById('body-group-name').textContent = newName;
+            document.getElementById('exp-group-name').textContent = newName;
+            document.getElementById('exp-group-desc').textContent = newDesc || "Nessuna descrizione.";
+            settingsModal.classList.add('hidden');
+        } else {
+            const err = await res.json();
+            alert("Errore: " + err.detail);
+        }
+    } catch (e) {
+        console.error("Errore salvataggio:", e);
+    }
+});
 
-    leaveBtn.addEventListener('click', () => leaveModal.classList.remove('hidden'));
-    document.getElementById('close-leave-modal').addEventListener('click', () => leaveModal.classList.add('hidden'));
+// Elimina Gruppo
+document.getElementById('delete-group-btn').addEventListener('click', async () => {
+    const confirmDelete = confirm("ATTENZIONE! Questa azione è irreversibile. Sei davvero sicuro di voler eliminare l'intero gruppo?");
 
-    document.getElementById('confirm-leave-btn').addEventListener('click', async () => {
+    if (confirmDelete) {
         try {
-            const res = await fetch(`${backendUrl}/api/groups/leave`, {
-                method: 'POST',
+            const res = await fetch(`${backendUrl}/api/group/delete`, {
+                method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: currentUser, group_id: groupId })
             });
-            if (res.ok) {
-                window.location.href = 'dashboard.html'; // Torna alla home dopo l'uscita
-            } else {
-                alert("Errore durante l'uscita dal gruppo.");
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    });
-
-    // 7. Logica Impostazioni Gruppo (Solo Admin)
-    const settingsModal = document.getElementById('settings-modal');
-    const editGroupName = document.getElementById('edit-group-name');
-    const editGroupDesc = document.getElementById('edit-group-desc');
-
-    // Apri modale e pre-compila i campi
-    settingsBtn.addEventListener('click', () => {
-        editGroupName.value = document.getElementById('exp-group-name').textContent;
-        const currentDesc = document.getElementById('exp-group-desc').textContent;
-        editGroupDesc.value = currentDesc === "Nessuna descrizione." ? "" : currentDesc;
-        settingsModal.classList.remove('hidden');
-    });
-
-    document.getElementById('close-settings-modal').addEventListener('click', () => {
-        settingsModal.classList.add('hidden');
-    });
-
-    // Salva modifiche
-    document.getElementById('save-settings-btn').addEventListener('click', async () => {
-        const newName = editGroupName.value.trim();
-        const newDesc = editGroupDesc.value.trim();
-
-        if (!newName) {
-            alert("Il nome del gruppo non può essere vuoto!");
-            return;
-        }
-
-        try {
-            const res = await fetch(`${backendUrl}/api/group/settings`, {
-                method: 'PUT', // Usiamo PUT per gli aggiornamenti
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser,
-                    group_id: groupId,
-                    name: newName,
-                    description: newDesc
-                })
-            });
 
             if (res.ok) {
-                // Aggiorna l'interfaccia senza ricaricare la pagina!
-                document.getElementById('body-group-name').textContent = newName;
-                document.getElementById('exp-group-name').textContent = newName;
-                document.getElementById('exp-group-desc').textContent = newDesc || "Nessuna descrizione.";
-                settingsModal.classList.add('hidden');
+                alert("Gruppo eliminato con successo.");
+                window.location.href = 'dashboard.html';
             } else {
                 const err = await res.json();
                 alert("Errore: " + err.detail);
             }
         } catch (e) {
-            console.error("Errore salvataggio:", e);
+            console.error("Errore eliminazione:", e);
         }
-    });
+    }
+});
 
-    // Elimina Gruppo
-    document.getElementById('delete-group-btn').addEventListener('click', async () => {
-        const confirmDelete = confirm("ATTENZIONE! Questa azione è irreversibile. Sei davvero sicuro di voler eliminare l'intero gruppo?");
+// Mantieni vivo l'heartbeat anche in questa pagina!
+setInterval(async () => {
+    if (!currentUser) return;
+    try {
+        await fetch(`${backendUrl}/api/heartbeat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser })
+        });
+    } catch (e) { }
+}, 60000);
 
-        if (confirmDelete) {
-            try {
-                const res = await fetch(`${backendUrl}/api/group/delete`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUser, group_id: groupId })
-                });
+// =========================================
+// WEBSOCKET E KANBAN BOARD LOGIC
+// =========================================
+const kanbanBoard = document.getElementById('kanban-board');
+const addColContainer = document.getElementById('add-column-container');
+const columnModal = document.getElementById('column-modal');
+const colTitleInput = document.getElementById('col-title');
+const colColorInput = document.getElementById('col-color');
+const editColIdInput = document.getElementById('edit-col-id');
+const saveColBtn = document.getElementById('save-column-btn');
 
-                if (res.ok) {
-                    alert("Gruppo eliminato con successo.");
-                    window.location.href = 'dashboard.html';
-                } else {
-                    const err = await res.json();
-                    alert("Errore: " + err.detail);
-                }
-            } catch (e) {
-                console.error("Errore eliminazione:", e);
+// Configura WebSocket (adatta la porta se necessario)
+const wsUrl = `wss://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/ws/group/${groupId}/${currentUser}`;
+let ws = new WebSocket(wsUrl);
+
+// LOG DI DEBUG - Aggiungi questi per capire cosa succede
+ws.onopen = () => console.log("✅ WebSocket Connesso con successo!");
+ws.onerror = (error) => console.error("❌ Errore WebSocket. Controlla il tab 'Network'.", error);
+ws.onclose = (e) => console.warn("⚠️ WebSocket Disconnesso:", e.code, e.reason);
+
+let columnsData = [];
+let dragSrcEl = null;
+
+// Gestione messaggi in entrata
+ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    const action = msg.action;
+    const payload = msg.data;
+
+    switch (msg.action) {
+        case 'init_columns':
+            columnsData = msg.data;
+            renderBoard();
+            break;
+        case 'column_created':
+            columnsData.push(msg.data);
+            renderBoard();
+            break;
+        case 'column_updated':
+            const index = columnsData.findIndex(c => c.id === msg.data.id);
+            if (index > -1) {
+                columnsData[index].title = msg.data.title;
+                columnsData[index].color = msg.data.color;
+                renderBoard();
             }
-        }
-    });
-
-    // Mantieni vivo l'heartbeat anche in questa pagina!
-    setInterval(async () => {
-        if (!currentUser) return;
-        try {
-            await fetch(`${backendUrl}/api/heartbeat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser })
+            break;
+        case 'column_deleted':
+            columnsData = columnsData.filter(c => c.id !== msg.data);
+            renderBoard();
+            break;
+        case 'columns_reordered':
+            const newOrder = msg.data;
+            // IL FIX: Ora aggiorniamo il parametro 'order' per ogni colonna
+            // in modo che corrisponda alla nuova posizione scelta.
+            columnsData.forEach(col => {
+                col.order = newOrder.indexOf(col.id);
             });
-        } catch (e) { }
-    }, 60000);
-
-    // =========================================
-    // WEBSOCKET E KANBAN BOARD LOGIC
-    // =========================================
-    const kanbanBoard = document.getElementById('kanban-board');
-    const addColContainer = document.getElementById('add-column-container');
-    const columnModal = document.getElementById('column-modal');
-    const colTitleInput = document.getElementById('col-title');
-    const colColorInput = document.getElementById('col-color');
-    const editColIdInput = document.getElementById('edit-col-id');
-    const saveColBtn = document.getElementById('save-column-btn');
-
-    // Configura WebSocket (adatta la porta se necessario)
-    const wsUrl = `wss://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/ws/group/${groupId}/${currentUser}`;
-    let ws = new WebSocket(wsUrl);
-
-    // LOG DI DEBUG - Aggiungi questi per capire cosa succede
-    ws.onopen = () => console.log("✅ WebSocket Connesso con successo!");
-    ws.onerror = (error) => console.error("❌ Errore WebSocket. Controlla il tab 'Network'.", error);
-    ws.onclose = (e) => console.warn("⚠️ WebSocket Disconnesso:", e.code, e.reason);
-
-    let columnsData = [];
-    let dragSrcEl = null;
-
-    // Gestione messaggi in entrata
-    ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        const action = msg.action;
-        const payload = msg.data;
-
-        switch (msg.action) {
-            case 'init_columns':
-                columnsData = msg.data;
+            // Ora possiamo ridisegnare tranquillamente!
+            renderBoard();
+            break;
+        case "init_tasks":
+            tasksData = payload;
+            renderBoard();
+            break;
+        case "task_created":
+            tasksData.push(payload);
+            renderBoard();
+            break;
+        case "task_moved":
+            const taskIndex = tasksData.findIndex(t => t.id === payload.task_id);
+            if (taskIndex !== -1) {
+                tasksData[taskIndex].column_id = payload.new_column_id;
                 renderBoard();
-                break;
-            case 'column_created':
-                columnsData.push(msg.data);
-                renderBoard();
-                break;
-            case 'column_updated':
-                const index = columnsData.findIndex(c => c.id === msg.data.id);
-                if (index > -1) {
-                    columnsData[index].title = msg.data.title;
-                    columnsData[index].color = msg.data.color;
-                    renderBoard();
-                }
-                break;
-            case 'column_deleted':
-                columnsData = columnsData.filter(c => c.id !== msg.data);
-                renderBoard();
-                break;
-            case 'columns_reordered':
-                const newOrder = msg.data;
-                // IL FIX: Ora aggiorniamo il parametro 'order' per ogni colonna
-                // in modo che corrisponda alla nuova posizione scelta.
-                columnsData.forEach(col => {
-                    col.order = newOrder.indexOf(col.id);
-                });
-                // Ora possiamo ridisegnare tranquillamente!
-                renderBoard();
-                break;
-            case "init_tasks":
-                tasksData = payload;
-                renderBoard();
-                break;
-            case "task_created":
-                tasksData.push(payload);
-                renderBoard();
-                break;
-            case "task_moved":
-                const taskIndex = tasksData.findIndex(t => t.id === payload.task_id);
-                if (taskIndex !== -1) {
-                    tasksData[taskIndex].column_id = payload.new_column_id;
-                    renderBoard();
-                }
-                break;
-            case "task_deleted":
-                tasksData = tasksData.filter(t => t.id !== payload.task_id);
-                renderBoard();
-                if (currentTaskInView && currentTaskInView.id === payload.task_id) {
-                    document.getElementById('task-view-modal').classList.add('hidden');
-                }
-                break;
-        }
-    };
+            }
+            break;
+        case "task_deleted":
+            tasksData = tasksData.filter(t => t.id !== payload.task_id);
+            renderBoard();
+            if (currentTaskInView && currentTaskInView.id === payload.task_id) {
+                document.getElementById('task-view-modal').classList.add('hidden');
+            }
+            break;
+    }
+};
 
-    ws.onclose = () => {
-        console.warn("WebSocket disconnesso. Implementare la riconnessione automatica in futuro.");
-    };
+ws.onclose = () => {
+    console.warn("WebSocket disconnesso. Implementare la riconnessione automatica in futuro.");
+};
 
-    // Listeners per il modale di conferma eliminazione colonna (fuori da renderBoard!)
-    const confirmDeleteColModal = document.getElementById('confirm-delete-col-modal');
-    document.getElementById('close-confirm-delete-col').addEventListener('click', () => {
+// Listeners per il modale di conferma eliminazione colonna (fuori da renderBoard!)
+const confirmDeleteColModal = document.getElementById('confirm-delete-col-modal');
+document.getElementById('close-confirm-delete-col').addEventListener('click', () => {
+    confirmDeleteColModal.classList.add('hidden');
+    pendingDeleteColId = null;
+});
+document.getElementById('cancel-delete-col-btn').addEventListener('click', () => {
+    confirmDeleteColModal.classList.add('hidden');
+    pendingDeleteColId = null;
+});
+confirmDeleteColModal.addEventListener('click', (e) => {
+    if (e.target === confirmDeleteColModal) {
         confirmDeleteColModal.classList.add('hidden');
         pendingDeleteColId = null;
-    });
-    document.getElementById('cancel-delete-col-btn').addEventListener('click', () => {
-        confirmDeleteColModal.classList.add('hidden');
+    }
+});
+document.getElementById('confirm-delete-col-btn').addEventListener('click', () => {
+    if (pendingDeleteColId) {
+        ws.send(JSON.stringify({ action: "delete_column", payload: { id: pendingDeleteColId } }));
         pendingDeleteColId = null;
-    });
-    confirmDeleteColModal.addEventListener('click', (e) => {
-        if (e.target === confirmDeleteColModal) {
-            confirmDeleteColModal.classList.add('hidden');
-            pendingDeleteColId = null;
-        }
-    });
-    document.getElementById('confirm-delete-col-btn').addEventListener('click', () => {
-        if (pendingDeleteColId) {
-            ws.send(JSON.stringify({ action: "delete_column", payload: { id: pendingDeleteColId } }));
-            pendingDeleteColId = null;
-        }
-        confirmDeleteColModal.classList.add('hidden');
-    });
+    }
+    confirmDeleteColModal.classList.add('hidden');
+});
 
-    // Renderizza le colonne nell'HTML
-    function renderBoard() {
-        // Rimuovi tutte le colonne esistenti ma mantieni il bottone "+"
-        const existingCols = document.querySelectorAll('.kanban-column');
-        existingCols.forEach(col => col.remove());
+// Renderizza le colonne nell'HTML
+function renderBoard() {
+    // Rimuovi tutte le colonne esistenti ma mantieni il bottone "+"
+    const existingCols = document.querySelectorAll('.kanban-column');
+    existingCols.forEach(col => col.remove());
 
-        // Ordina l'array per sicurezza (l'order definisce la posizione da sinistra a destra)
-        columnsData.sort((a, b) => a.order - b.order);
+    // Ordina l'array per sicurezza (l'order definisce la posizione da sinistra a destra)
+    columnsData.sort((a, b) => a.order - b.order);
 
-        columnsData.forEach(col => {
-            const colEl = document.createElement('div');
-            colEl.className = 'kanban-column';
-            colEl.setAttribute('data-id', col.id);
-            colEl.draggable = canWrite;
+    columnsData.forEach(col => {
+        const colEl = document.createElement('div');
+        colEl.className = 'kanban-column';
+        colEl.setAttribute('data-id', col.id);
+        colEl.draggable = canWrite;
 
-            // Nuova struttura HTML con il contenitore per il titolo
-            colEl.innerHTML = `
+        // Nuova struttura HTML con il contenitore per il titolo
+        colEl.innerHTML = `
                 <div class="column-header" style="background-color: ${col.color};">
                     <div class="title-container">
                         <span class="column-title-text">${col.title}</span>
@@ -481,231 +464,231 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="column-body" style="padding: 10px; flex-grow: 1;"></div>
             `;
 
-            const columnBodyForTasks = colEl.querySelector('.column-body');
-            renderTasksForColumn(col.id, columnBodyForTasks);
+        const columnBodyForTasks = colEl.querySelector('.column-body');
+        renderTasksForColumn(col.id, columnBodyForTasks);
 
-            // ... (I tuoi vecchi event listener per Drag&Drop e Bottoni rimangono uguali qui) ...
-            colEl.addEventListener('dragstart', handleDragStart);
-            colEl.addEventListener('dragover', handleDragOver);
-            colEl.addEventListener('dragleave', handleDragLeave);
-            colEl.addEventListener('drop', handleDrop);
-            colEl.addEventListener('dragend', handleDragEnd);
+        // ... (I tuoi vecchi event listener per Drag&Drop e Bottoni rimangono uguali qui) ...
+        colEl.addEventListener('dragstart', handleDragStart);
+        colEl.addEventListener('dragover', handleDragOver);
+        colEl.addEventListener('dragleave', handleDragLeave);
+        colEl.addEventListener('drop', handleDrop);
+        colEl.addEventListener('dragend', handleDragEnd);
 
-            if (canWrite) {
-                colEl.querySelector('.edit-col-btn').addEventListener('click', () => openColumnModal(col));
-                colEl.querySelector('.delete-col-btn').addEventListener('click', () => {
-                    pendingDeleteColId = col.id;
-                    confirmDeleteColModal.classList.remove('hidden');
-                });
-            }
+        if (canWrite) {
+            colEl.querySelector('.edit-col-btn').addEventListener('click', () => openColumnModal(col));
+            colEl.querySelector('.delete-col-btn').addEventListener('click', () => {
+                pendingDeleteColId = col.id;
+                confirmDeleteColModal.classList.remove('hidden');
+            });
+        }
 
-            // 1. Inseriamo la colonna nel DOM (Fondamentale farlo PRIMA di misurare)
-            kanbanBoard.insertBefore(colEl, addColContainer);
+        // 1. Inseriamo la colonna nel DOM (Fondamentale farlo PRIMA di misurare)
+        kanbanBoard.insertBefore(colEl, addColContainer);
 
-            // 2. Misuriamo il testo: se sfora, attiviamo lo scrolling!
-            const titleContainer = colEl.querySelector('.title-container');
-            const titleText = colEl.querySelector('.column-title-text');
+        // 2. Misuriamo il testo: se sfora, attiviamo lo scrolling!
+        const titleContainer = colEl.querySelector('.title-container');
+        const titleText = colEl.querySelector('.column-title-text');
 
-            // Se la larghezza reale del testo è maggiore del suo contenitore visibile...
-            if (titleText.scrollWidth > titleContainer.clientWidth) {
-                // Calcoliamo quanti pixel extra ci sono da far scorrere
-                const scrollDistance = titleText.scrollWidth - titleContainer.clientWidth;
-                // Passiamo la distanza calcolata al CSS tramite una variabile custom
-                titleText.style.setProperty('--scroll-dist', `-${scrollDistance}px`);
-                titleText.classList.add('scrolling-text');
-            }
+        // Se la larghezza reale del testo è maggiore del suo contenitore visibile...
+        if (titleText.scrollWidth > titleContainer.clientWidth) {
+            // Calcoliamo quanti pixel extra ci sono da far scorrere
+            const scrollDistance = titleText.scrollWidth - titleContainer.clientWidth;
+            // Passiamo la distanza calcolata al CSS tramite una variabile custom
+            titleText.style.setProperty('--scroll-dist', `-${scrollDistance}px`);
+            titleText.classList.add('scrolling-text');
+        }
 
-            // --- 4. DROPZONE SULLE COLONNE ---
-            // Aggiungi questi listener all'elemento `.column-body` quando lo crei nel JS
-            const columnBody = colEl.querySelector('.column-body');
-            columnBody.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        // --- 4. DROPZONE SULLE COLONNE ---
+        // Aggiungi questi listener all'elemento `.column-body` quando lo crei nel JS
+        const columnBody = colEl.querySelector('.column-body');
+        columnBody.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-                try {
-                    const data = JSON.parse(e.dataTransfer.getData('application/json'));
+            try {
+                const data = JSON.parse(e.dataTransfer.getData('application/json'));
 
-                    // Se stiamo droppando un TASK (e non una colonna)
-                    if (data.type === 'task') {
-                        const targetColumnId = col.id; // L'ID della colonna di destinazione
+                // Se stiamo droppando un TASK (e non una colonna)
+                if (data.type === 'task') {
+                    const targetColumnId = col.id; // L'ID della colonna di destinazione
 
-                        // --- 1. AGGIORNAMENTO VISIVO ISTANTANEO (Addio effetto elastico!) ---
-                        const draggedTaskEl = document.querySelector(`[data-task-id="${data.id}"]`);
-                        if (draggedTaskEl) {
-                            const targetBody = colEl.querySelector('.column-body');
-                            targetBody.appendChild(draggedTaskEl);
-                        }
-
-                        // --- 2. AGGIORNA L'ARRAY LOCALE ---
-                        const taskIndex = tasksData.findIndex(t => t.id === data.id);
-                        if (taskIndex !== -1) {
-                            // Se il task era già in questa colonna, non fare nulla
-                            if (tasksData[taskIndex].column_id === targetColumnId) return;
-
-                            tasksData[taskIndex].column_id = targetColumnId;
-                        }
-
-                        // --- 3. AVVISA IL SERVER ---
-                        ws.send(JSON.stringify({
-                            action: "move_task",
-                            payload: {
-                                task_id: data.id,
-                                new_column_id: targetColumnId
-                            }
-                        }));
+                    // --- 1. AGGIORNAMENTO VISIVO ISTANTANEO (Addio effetto elastico!) ---
+                    const draggedTaskEl = document.querySelector(`[data-task-id="${data.id}"]`);
+                    if (draggedTaskEl) {
+                        const targetBody = colEl.querySelector('.column-body');
+                        targetBody.appendChild(draggedTaskEl);
                     }
-                } catch (err) {
-                    console.error("Errore nel drop del task:", err);
+
+                    // --- 2. AGGIORNA L'ARRAY LOCALE ---
+                    const taskIndex = tasksData.findIndex(t => t.id === data.id);
+                    if (taskIndex !== -1) {
+                        // Se il task era già in questa colonna, non fare nulla
+                        if (tasksData[taskIndex].column_id === targetColumnId) return;
+
+                        tasksData[taskIndex].column_id = targetColumnId;
+                    }
+
+                    // --- 3. AVVISA IL SERVER ---
+                    ws.send(JSON.stringify({
+                        action: "move_task",
+                        payload: {
+                            task_id: data.id,
+                            new_column_id: targetColumnId
+                        }
+                    }));
                 }
-            });
-
-            columnBody.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
-    }
-
-    // Modal Handlers
-    document.getElementById('add-column-btn').addEventListener('click', () => openColumnModal());
-    document.getElementById('close-column-modal').addEventListener('click', () => columnModal.classList.add('hidden'));
-
-    function openColumnModal(colData = null) {
-        if (colData) {
-            document.getElementById('column-modal-title').textContent = "Modifica Colonna";
-            colTitleInput.value = colData.title;
-            colColorInput.value = colData.color;
-            editColIdInput.value = colData.id;
-        } else {
-            document.getElementById('column-modal-title').textContent = "Nuova Colonna";
-            colTitleInput.value = "";
-            colColorInput.value = "#f6b36b"; // Colore default
-            editColIdInput.value = "";
-        }
-        columnModal.classList.remove('hidden');
-    }
-
-    saveColBtn.addEventListener('click', () => {
-        const title = colTitleInput.value.trim();
-        const color = colColorInput.value;
-        const id = editColIdInput.value;
-
-        if (!title) return alert("Inserisci un titolo.");
-
-        if (id) {
-            // Modifica colonna esistente
-            ws.send(JSON.stringify({ action: "update_column", payload: { id, title, color } }));
-        } else {
-            // Crea nuova colonna alla fine dell'array
-            const newOrder = columnsData.length;
-            ws.send(JSON.stringify({ action: "create_column", payload: { title, color, order: newOrder } }));
-        }
-
-        columnModal.classList.add('hidden');
-    });
-
-    // =========================================
-    // LOGICA DRAG AND DROP COLONNE
-    // =========================================
-    function handleDragStart(e) {
-        dragSrcEl = this;
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', this.innerHTML);
-        this.style.opacity = '0.4';
-    }
-
-    function handleDragOver(e) {
-        // If it's a task being dragged, let the column-body handler deal with it
-        if (e.dataTransfer.types.includes('application/json')) return;
-        if (e.preventDefault) e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        this.classList.add('drag-over');
-        return false;
-    }
-
-
-    function handleDragLeave(e) {
-        // Only remove if the related target is outside this column
-        if (!this.contains(e.relatedTarget)) {
-            this.classList.remove('drag-over');
-        }
-    }
-
-    function handleDrop(e) {
-        // If it's a task being dragged, ignore — column-body handles it
-        if (e.dataTransfer.types.includes('application/json')) return;
-        if (e.stopPropagation) e.stopPropagation();
-
-        if (dragSrcEl !== this) {
-            const parent = this.parentNode;
-            const srcNext = dragSrcEl.nextSibling;
-            const thisNext = this.nextSibling;
-
-            if (thisNext === dragSrcEl) {
-                parent.insertBefore(dragSrcEl, this);
-            } else if (srcNext === this) {
-                parent.insertBefore(this, dragSrcEl);
-            } else {
-                parent.insertBefore(dragSrcEl, this);
+            } catch (err) {
+                console.error("Errore nel drop del task:", err);
             }
-
-            const newOrderIds = [];
-            document.querySelectorAll('.kanban-column').forEach(col => {
-                newOrderIds.push(col.getAttribute('data-id'));
-            });
-
-            ws.send(JSON.stringify({ action: "reorder_columns", payload: { order: newOrderIds } }));
-        }
-        return false;
-    }
-
-    function handleDragEnd(e) {
-        this.style.opacity = '1';
-        document.querySelectorAll('.kanban-column').forEach(col => {
-            col.classList.remove('drag-over');
         });
+
+        columnBody.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+}
+
+// Modal Handlers
+document.getElementById('add-column-btn').addEventListener('click', () => openColumnModal());
+document.getElementById('close-column-modal').addEventListener('click', () => columnModal.classList.add('hidden'));
+
+function openColumnModal(colData = null) {
+    if (colData) {
+        document.getElementById('column-modal-title').textContent = "Modifica Colonna";
+        colTitleInput.value = colData.title;
+        colColorInput.value = colData.color;
+        editColIdInput.value = colData.id;
+    } else {
+        document.getElementById('column-modal-title').textContent = "Nuova Colonna";
+        colTitleInput.value = "";
+        colColorInput.value = "#f6b36b"; // Colore default
+        editColIdInput.value = "";
+    }
+    columnModal.classList.remove('hidden');
+}
+
+saveColBtn.addEventListener('click', () => {
+    const title = colTitleInput.value.trim();
+    const color = colColorInput.value;
+    const id = editColIdInput.value;
+
+    if (!title) return alert("Inserisci un titolo.");
+
+    if (id) {
+        // Modifica colonna esistente
+        ws.send(JSON.stringify({ action: "update_column", payload: { id, title, color } }));
+    } else {
+        // Crea nuova colonna alla fine dell'array
+        const newOrder = columnsData.length;
+        ws.send(JSON.stringify({ action: "create_column", payload: { title, color, order: newOrder } }));
     }
 
-    // --- 1. VARIABILI GLOBALI ---
-    let tasksData = []; // Questo andrà popolato dal tuo WebSocket!
-    let currentTaskInView = null; // Salva il task attualmente aperto
+    columnModal.classList.add('hidden');
+});
 
-    // --- 2. GESTIONE MODALI ---
-    const globalAddTaskBtn = document.getElementById('global-add-task-btn');
-    const taskModal = document.getElementById('task-modal');
-    const closeTaskModal = document.getElementById('close-task-modal');
-    const taskColumnSelect = document.getElementById('task-column-select');
+// =========================================
+// LOGICA DRAG AND DROP COLONNE
+// =========================================
+function handleDragStart(e) {
+    dragSrcEl = this;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+    this.style.opacity = '0.4';
+}
 
-    // Apre il modale per creare un nuovo task
-    globalAddTaskBtn.addEventListener('click', () => {
-        document.getElementById('task-modal-title').innerText = "Nuovo Task";
-        document.getElementById('edit-task-id').value = "";
-        document.getElementById('task-title').value = "";
-        document.getElementById('task-desc').value = "";
-        document.getElementById('task-due-date').value = "";
+function handleDragOver(e) {
+    // If it's a task being dragged, let the column-body handler deal with it
+    if (e.dataTransfer.types.includes('application/json')) return;
+    if (e.preventDefault) e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    this.classList.add('drag-over');
+    return false;
+}
 
-        // Popola la tendina con le colonne attuali
-        taskColumnSelect.innerHTML = columnsData.map(col =>
-            `<option value="${col.id}">${col.title}</option>`
-        ).join('');
 
-        taskModal.classList.remove('hidden');
+function handleDragLeave(e) {
+    // Only remove if the related target is outside this column
+    if (!this.contains(e.relatedTarget)) {
+        this.classList.remove('drag-over');
+    }
+}
+
+function handleDrop(e) {
+    // If it's a task being dragged, ignore — column-body handles it
+    if (e.dataTransfer.types.includes('application/json')) return;
+    if (e.stopPropagation) e.stopPropagation();
+
+    if (dragSrcEl !== this) {
+        const parent = this.parentNode;
+        const srcNext = dragSrcEl.nextSibling;
+        const thisNext = this.nextSibling;
+
+        if (thisNext === dragSrcEl) {
+            parent.insertBefore(dragSrcEl, this);
+        } else if (srcNext === this) {
+            parent.insertBefore(this, dragSrcEl);
+        } else {
+            parent.insertBefore(dragSrcEl, this);
+        }
+
+        const newOrderIds = [];
+        document.querySelectorAll('.kanban-column').forEach(col => {
+            newOrderIds.push(col.getAttribute('data-id'));
+        });
+
+        ws.send(JSON.stringify({ action: "reorder_columns", payload: { order: newOrderIds } }));
+    }
+    return false;
+}
+
+function handleDragEnd(e) {
+    this.style.opacity = '1';
+    document.querySelectorAll('.kanban-column').forEach(col => {
+        col.classList.remove('drag-over');
     });
+}
 
-    closeTaskModal.addEventListener('click', () => taskModal.classList.add('hidden'));
+// --- 1. VARIABILI GLOBALI ---
+let tasksData = []; // Questo andrà popolato dal tuo WebSocket!
+let currentTaskInView = null; // Salva il task attualmente aperto
 
-    // --- 3. RENDERING DEI TASK ---
-    // Chiama questa funzione dentro la tua renderBoard(), dopo aver creato l'HTML della colonna
-    function renderTasksForColumn(columnId, columnBodyElement) {
-        const columnTasks = tasksData.filter(t => t.column_id === columnId);
+// --- 2. GESTIONE MODALI ---
+const globalAddTaskBtn = document.getElementById('global-add-task-btn');
+const taskModal = document.getElementById('task-modal');
+const closeTaskModal = document.getElementById('close-task-modal');
+const taskColumnSelect = document.getElementById('task-column-select');
 
-        columnTasks.forEach(task => {
-            const taskEl = document.createElement('div');
-            taskEl.className = 'task-card';
-            taskEl.draggable = true;
-            taskEl.dataset.taskId = task.id;
+// Apre il modale per creare un nuovo task
+globalAddTaskBtn.addEventListener('click', () => {
+    document.getElementById('task-modal-title').innerText = "Nuovo Task";
+    document.getElementById('edit-task-id').value = "";
+    document.getElementById('task-title').value = "";
+    document.getElementById('task-desc').value = "";
+    document.getElementById('task-due-date').value = "";
 
-            taskEl.innerHTML = `
+    // Popola la tendina con le colonne attuali
+    taskColumnSelect.innerHTML = columnsData.map(col =>
+        `<option value="${col.id}">${col.title}</option>`
+    ).join('');
+
+    taskModal.classList.remove('hidden');
+});
+
+closeTaskModal.addEventListener('click', () => taskModal.classList.add('hidden'));
+
+// --- 3. RENDERING DEI TASK ---
+// Chiama questa funzione dentro la tua renderBoard(), dopo aver creato l'HTML della colonna
+function renderTasksForColumn(columnId, columnBodyElement) {
+    const columnTasks = tasksData.filter(t => t.column_id === columnId);
+
+    columnTasks.forEach(task => {
+        const taskEl = document.createElement('div');
+        taskEl.className = 'task-card';
+        taskEl.draggable = true;
+        taskEl.dataset.taskId = task.id;
+
+        taskEl.innerHTML = `
             <h4 class="task-title">${task.title}</h4>
             <div class="task-desc-preview">${task.description || "Nessuna descrizione."}</div>
             <div class="task-meta">
@@ -714,89 +697,89 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
-            // DRAG & DROP DEI TASK
-            if (canWrite) {
-                taskEl.addEventListener('dragstart', (e) => {
-                    e.stopPropagation();
-                    e.dataTransfer.setData('application/json', JSON.stringify({ type: 'task', id: task.id }));
-                    e.dataTransfer.setData('text/plain', 'task'); // helps with type detection
-                    setTimeout(() => taskEl.classList.add('is-dragging'), 0);
-                });
+        // DRAG & DROP DEI TASK
+        if (canWrite) {
+            taskEl.addEventListener('dragstart', (e) => {
+                e.stopPropagation();
+                e.dataTransfer.setData('application/json', JSON.stringify({ type: 'task', id: task.id }));
+                e.dataTransfer.setData('text/plain', 'task'); // helps with type detection
+                setTimeout(() => taskEl.classList.add('is-dragging'), 0);
+            });
 
-                taskEl.addEventListener('dragend', (e) => {
-                    e.stopPropagation();
-                    taskEl.classList.remove('is-dragging');
-                });
-            }
-
-
-            // CLICK PER VISUALIZZARE I DETTAGLI
-            taskEl.addEventListener('click', () => openTaskViewModal(task));
-
-            columnBodyElement.appendChild(taskEl);
-        });
-    }
-    document.getElementById('save-task-btn').addEventListener('click', () => {
-        const title = document.getElementById('task-title').value;
-        const desc = document.getElementById('task-desc').value;
-        const dueDate = document.getElementById('task-due-date').value;
-        const columnId = document.getElementById('task-column-select').value;
-
-        if (!title.trim()) {
-            alert("Il titolo del task è obbligatorio!");
-            return;
+            taskEl.addEventListener('dragend', (e) => {
+                e.stopPropagation();
+                taskEl.classList.remove('is-dragging');
+            });
         }
 
-        // Invia al backend tramite WebSocket
-        ws.send(JSON.stringify({
-            action: "create_task",
-            payload: {
-                title: title,
-                description: desc,
-                due_date: dueDate,
-                column_id: columnId
-            }
-        }));
 
-        // Chiudi il modale
-        taskModal.classList.add('hidden');
+        // CLICK PER VISUALIZZARE I DETTAGLI
+        taskEl.addEventListener('click', () => openTaskViewModal(task));
+
+        columnBodyElement.appendChild(taskEl);
     });
-    // --- FUNZIONE PER MASSIMIZZARE IL TASK ---
-    function openTaskViewModal(task) {
-        // 1. Salviamo il task nella variabile globale (ci servirà poi per modificarlo o eliminarlo)
-        currentTaskInView = task;
+}
+document.getElementById('save-task-btn').addEventListener('click', () => {
+    const title = document.getElementById('task-title').value;
+    const desc = document.getElementById('task-desc').value;
+    const dueDate = document.getElementById('task-due-date').value;
+    const columnId = document.getElementById('task-column-select').value;
 
-        // 2. Riempiamo i campi del modale con i dati del task
-        document.getElementById('view-task-title').innerText = task.title;
-        document.getElementById('view-task-creator').innerText = task.creator;
-
-        // Se c'è una data la mostriamo, altrimenti scriviamo "Nessuna"
-        document.getElementById('view-task-due').innerText = task.due_date ? task.due_date : "Nessuna";
-
-        // Inseriamo la descrizione. Usiamo innerText per mantenere la sicurezza ed evitare bug con l'HTML
-        document.getElementById('view-task-desc').innerText = task.description || "Nessuna descrizione fornita per questo task.";
-
-        // 3. Mostriamo il modale togliendo la classe 'hidden'
-        document.getElementById('task-view-modal').classList.remove('hidden');
+    if (!title.trim()) {
+        alert("Il titolo del task è obbligatorio!");
+        return;
     }
 
-    // Event Listener per chiudere il modale di visualizzazione
-    document.getElementById('close-task-view-modal').addEventListener('click', () => {
-        document.getElementById('task-view-modal').classList.add('hidden');
-        currentTaskInView = null; // Resettiamo la variabile
-    });
+    // Invia al backend tramite WebSocket
+    ws.send(JSON.stringify({
+        action: "create_task",
+        payload: {
+            title: title,
+            description: desc,
+            due_date: dueDate,
+            column_id: columnId
+        }
+    }));
 
-    document.getElementById('delete-task-btn').addEventListener('click', () => {
-        if (!currentTaskInView) return;
+    // Chiudi il modale
+    taskModal.classList.add('hidden');
+});
+// --- FUNZIONE PER MASSIMIZZARE IL TASK ---
+function openTaskViewModal(task) {
+    // 1. Salviamo il task nella variabile globale (ci servirà poi per modificarlo o eliminarlo)
+    currentTaskInView = task;
 
-        // Avvisiamo il server
-        ws.send(JSON.stringify({
-            action: "delete_task",
-            payload: { task_id: currentTaskInView.id }
-        }));
+    // 2. Riempiamo i campi del modale con i dati del task
+    document.getElementById('view-task-title').innerText = task.title;
+    document.getElementById('view-task-creator').innerText = task.creator;
 
-        // Chiudiamo il modale
-        document.getElementById('task-view-modal').classList.add('hidden');
+    // Se c'è una data la mostriamo, altrimenti scriviamo "Nessuna"
+    document.getElementById('view-task-due').innerText = task.due_date ? task.due_date : "Nessuna";
 
-    });
+    // Inseriamo la descrizione. Usiamo innerText per mantenere la sicurezza ed evitare bug con l'HTML
+    document.getElementById('view-task-desc').innerText = task.description || "Nessuna descrizione fornita per questo task.";
+
+    // 3. Mostriamo il modale togliendo la classe 'hidden'
+    document.getElementById('task-view-modal').classList.remove('hidden');
+}
+
+// Event Listener per chiudere il modale di visualizzazione
+document.getElementById('close-task-view-modal').addEventListener('click', () => {
+    document.getElementById('task-view-modal').classList.add('hidden');
+    currentTaskInView = null; // Resettiamo la variabile
+});
+
+document.getElementById('delete-task-btn').addEventListener('click', () => {
+    if (!currentTaskInView) return;
+
+    // Avvisiamo il server
+    ws.send(JSON.stringify({
+        action: "delete_task",
+        payload: { task_id: currentTaskInView.id }
+    }));
+
+    // Chiudiamo il modale
+    document.getElementById('task-view-modal').classList.add('hidden');
+
+});
 });
