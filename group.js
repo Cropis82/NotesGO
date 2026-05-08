@@ -219,7 +219,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({ username: currentUser, group_id: groupId })
             });
             if (res.ok) {
-                window.location.href = 'dashboard.html'; // Torna alla home dopo l'uscita
+                btn.dataset.current = newRole;
+                btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
+
+                // Trova il secondo span dentro il div flex (il nome, non il dot)
+                const nameSpan = btn.closest('.member-item').querySelector('div > span:not(.online-dot)');
+                nameSpan.textContent = `${targetUser} ${newRole === 'moderator' ? '🛡️' : ''}`;
             } else {
                 alert("Errore durante l'uscita dal gruppo.");
             }
