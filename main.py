@@ -360,12 +360,13 @@ async def websocket_endpoint(websocket: WebSocket, group_id: str, username: str)
             # Controlla i permessi per le azioni di scrittura
             write_actions = {"create_column", "update_column", "delete_column", "reorder_columns", "create_task", "move_task", "delete_task", "update_task"}
             if action in write_actions:
-                group_result = groups_table.search(GroupQuery.id == group_id)
+                _GroupQuery = Query()
+                group_result = groups_table.search(_GroupQuery.id == group_id)
                 if group_result:
                     group = group_result[0]
                     if group.get('permissions') == 'owner' and group.get('owner') != username:
                         await websocket.send_json({"action": "error", "data": "Permessi insufficienti."})
-                        continue  # Blocca l'azione senza disconnettere
+                        continue
 
             if action == "create_column":
                 new_col = {

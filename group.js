@@ -398,11 +398,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             colEl.addEventListener('drop', handleDrop);
             colEl.addEventListener('dragend', handleDragEnd);
 
-            colEl.querySelector('.edit-col-btn').addEventListener('click', () => openColumnModal(col));
-            colEl.querySelector('.delete-col-btn').addEventListener('click', () => {
-                pendingDeleteColId = col.id;
-                confirmDeleteColModal.classList.remove('hidden');
-            });
+            if (canWrite) {
+                colEl.querySelector('.edit-col-btn').addEventListener('click', () => openColumnModal(col));
+                colEl.querySelector('.delete-col-btn').addEventListener('click', () => {
+                    pendingDeleteColId = col.id;
+                    confirmDeleteColModal.classList.remove('hidden');
+                });
+            }
 
             // 1. Inseriamo la colonna nel DOM (Fondamentale farlo PRIMA di misurare)
             kanbanBoard.insertBefore(colEl, addColContainer);

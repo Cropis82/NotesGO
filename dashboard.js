@@ -398,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Quando clicchi su un nuovo cubo...
-        // Quando clicchi su un nuovo cubo...
         cube.addEventListener('click', async () => {
             // Spegni tutti i cubi
             document.querySelectorAll('.color-cube').forEach(c => c.classList.remove('selected'));
