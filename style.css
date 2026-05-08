@@ -365,6 +365,17 @@ input[type="password"]:focus {
     margin-bottom: 30px; /* Spazio tra la barra e i gruppi */
 }
 
+.group-result-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    margin-top: 8px;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+}
+
 /* Stile aggiornato per la barra di ricerca locale */
 .local-search {
     color: var(--theme-text); 

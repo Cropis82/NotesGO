@@ -443,3 +443,21 @@ def join_group(data: JoinGroup):
     groups_table.update({'members': group['members']}, GroupQuery.id == data.group_id)
     
     return {"status": "successo", "messaggio": f"Hai rejoined il gruppo '{group['name']}'!"}
+
+@app.get("/api/groups/search")
+def search_groups(q: str = "", username: str = ""):
+    all_groups = groups_table.all()
+    results = []
+    for group in all_groups:
+        if group.get('access') != 'public':
+            continue
+        if username in group.get('members', []):
+            continue  # Nascondi gruppi in cui sei già membro
+        if q.lower() in group['name'].lower():
+            results.append({
+                "id": group["id"],
+                "name": group["name"],
+                "description": group.get("description", ""),
+                "members_count": len(group.get("members", []))
+            })
+    return {"groups": results}

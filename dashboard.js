@@ -238,6 +238,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- RICERCA GRUPPI PUBBLICI ---
+    const publicSearchInput = document.getElementById('public-search-input');
+    const publicResultsContainer = document.getElementById('public-results-container');
+    let searchTimeout = null;
+
+    publicSearchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = publicSearchInput.value.trim();
+
+        if (!query) {
+            publicResultsContainer.innerHTML = '';
+            return;
+        }
+
+        // Debounce: aspetta 400ms dopo l'ultima lettera prima di cercare
+        searchTimeout = setTimeout(() => searchPublicGroups(query), 400);
+    });
+
+    async function searchPublicGroups(query) {
+        try {
+            const res = await fetch(`https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/groups/search?q=${encodeURIComponent(query)}&username=${encodeURIComponent(currentUser)}`);
+            const data = await res.json();
+
+            if (data.groups.length === 0) {
+                publicResultsContainer.innerHTML = `<p class="output-label" style="padding: 10px;">Nessun gruppo pubblico trovato.</p>`;
+                return;
+            }
+
+            publicResultsContainer.innerHTML = data.groups.map(group => `
+            <div class="group-result-card">
+                <div>
+                    <strong style="color: var(--theme-text);">${group.name}</strong>
+                    <p class="output-label" style="margin: 2px 0;">${group.description || 'Nessuna descrizione.'}</p>
+                    <small class="output-label">👥 ${group.members_count} membri</small>
+                </div>
+                <button class="small-btn join-public-btn" data-id="${group.id}">Unisciti</button>
+            </div>
+        `).join('');
+
+            // Event listeners sui bottoni "Unisciti"
+            publicResultsContainer.querySelectorAll('.join-public-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const groupId = btn.dataset.id;
+                    btn.disabled = true;
+                    btn.textContent = '...';
+
+                    const res = await fetch('https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/groups/join', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUser, group_id: groupId })
+                    });
+
+                    if (res.ok) {
+                        btn.textContent = '✅';
+                        loadGroups();
+                        setTimeout(() => searchPublicGroups(publicSearchInput.value.trim()), 1000);
+                    } else {
+                        btn.textContent = '❌';
+                        btn.disabled = false;
+                    }
+                });
+            });
+
+        } catch (err) {
+            console.error("Errore ricerca:", err);
+        }
+    }
+
     // --- IL MOTORE DEI TEMI ---
 
     // 1. Definiamo le palette di colori per ogni tema
