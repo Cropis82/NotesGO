@@ -97,56 +97,81 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const manageList = document.getElementById('manage-members-list');
 
                 group.membri_dettagliati.forEach(member => {
-                    if (member.username === group.owner) return; // Salta l'owner
-
                     const isMod = (group.moderators || []).includes(member.username);
-                    const div = document.createElement('div');
-                    div.className = 'member-item';
-                    div.style.justifyContent = 'space-between';
-                    div.innerHTML = `
-                        <span style="color: var(--theme-text);">
-                            ${member.username} ${isMod ? '🛡️' : ''}
-                        </span>
-                        <button 
-                            class="small-btn role-toggle-btn" 
-                            data-user="${member.username}" 
-                            data-current="${isMod ? 'moderator' : 'member'}"
-                            style="font-size: 0.75rem; padding: 3px 8px;">
-                            ${isMod ? 'Rimuovi Mod' : 'Rendi Mod'}
-                        </button>
-                    `;
-                    manageList.appendChild(div);
+                    const isOnline = member.online;
+                    const isOwner = member.username === group.owner;
+                    const isCurrentUserOwner = group.owner === currentUser;
+
+                    const actionsHtml = (!isOwner && isCurrentUserOwner) ? `
+                        <div style="display: flex; gap: 5px; margin-left: auto;">
+                            <button class="small-btn role-toggle-btn" 
+                                data-user="${member.username}" 
+                                data-current="${isMod ? 'moderator' : 'member'}"
+                                style="font-size: 0.7rem; padding: 2px 6px;">
+                                ${isMod ? '🛡️ Rimuovi' : '🛡️ Mod'}
+                            </button>
+                            <button class="small-btn kick-btn" 
+                               data-user="${member.username}"
+                                style="font-size: 0.7rem; padding: 2px 6px; background: #e94560;">
+                                👢 Kick
+                           </button>
+                       </div>
+                   ` : '';
+
+                    membersContainer.innerHTML += `
+                        <div class="member-item" style="justify-content: space-between;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="online-dot" style="background-color: ${isOnline ? '#4CAF50' : '#888'};"></span>
+                               <span style="margin-left: 10px; color: var(--theme-text); font-weight: bold;">
+                                    ${member.username}
+                                    ${isOwner ? '👑' : ''}
+                                   ${isMod ? '🛡️' : ''}
+                               </span>
+                            </div>
+                            ${actionsHtml}
+                       </div>
+                   `;
                 });
 
-                // Event listeners sui bottoni
-                manageList.querySelectorAll('.role-toggle-btn').forEach(btn => {
+                // Ruoli
+                membersContainer.querySelectorAll('.role-toggle-btn').forEach(btn => {
                     btn.addEventListener('click', async () => {
                         const targetUser = btn.dataset.user;
-                        const currentRole = btn.dataset.current;
-                        const newRole = currentRole === 'moderator' ? 'member' : 'moderator';
+                        const newRole = btn.dataset.current === 'moderator' ? 'member' : 'moderator';
 
                         const res = await fetch(`${backendUrl}/api/group/role`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                requester: currentUser,
-                                group_id: groupId,
-                                target_user: targetUser,
-                                role: newRole
-                            })
+                            body: JSON.stringify({ requester: currentUser, group_id: groupId, target_user: targetUser, role: newRole })
                         });
 
                         if (res.ok) {
-                            // Aggiorna il bottone immediatamente senza ricaricare
                             btn.dataset.current = newRole;
-                            const nameSpan = btn.previousElementSibling;
-                            if (newRole === 'moderator') {
-                                btn.textContent = 'Rimuovi Mod';
-                                nameSpan.textContent = `${targetUser} 🛡️`;
-                            } else {
-                                btn.textContent = 'Rendi Mod';
-                                nameSpan.textContent = targetUser;
-                            }
+                            btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
+                            // Aggiorna il badge nel nome
+                            const nameSpan = btn.closest('.member-item').querySelector('span[style]');
+                            const baseName = targetUser;
+                            nameSpan.innerHTML = `${baseName} ${newRole === 'moderator' ? '🛡️' : ''}`;
+                        } else {
+                            const err = await res.json();
+                            alert("Errore: " + err.detail);
+                        }
+                    });
+                });
+
+                // Kick
+                membersContainer.querySelectorAll('.kick-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const targetUser = btn.dataset.user;
+
+                        const res = await fetch(`${backendUrl}/api/groups/leave`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: targetUser, group_id: groupId })
+                        });
+
+                        if (res.ok) {
+                            btn.closest('.member-item').remove();
                         } else {
                             const err = await res.json();
                             alert("Errore: " + err.detail);
