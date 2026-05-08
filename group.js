@@ -53,6 +53,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response.ok) {
             const group = data.gruppo;
             canWrite = group.permissions === 'all' || group.owner === currentUser;
+            const moderators = group.moderators || [];
+            const isModerator = moderators.includes(currentUser);
+            canWrite = group.permissions === 'all' || group.owner === currentUser || isModerator;
 
             if (!canWrite) {
                 // Nascondi tutti i bottoni di scrittura
@@ -76,16 +79,81 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Popola la lista membri
             const membersContainer = document.getElementById('members-container');
             group.membri_dettagliati.forEach(member => {
+                const isMod = (group.moderators || []).includes(member.username);
                 const isOnline = member.online;
                 membersContainer.innerHTML += `
                     <div class="member-item">
                         <span class="online-dot" style="background-color: ${isOnline ? '#4CAF50' : '#888'};"></span>
                         <span style="margin-left: 10px; color: var(--theme-text); font-weight: bold;">
-                            ${member.username} ${member.username === group.owner ? '👑' : ''}
+                            ${member.username} ${member.username === group.owner ? '👑' : ''} ${isMod ? '🛡️' : ''}
                         </span>
                     </div>
                 `;
             });
+
+            // Subito dopo aver popolato members-container
+            if (group.owner === currentUser) {
+                document.getElementById('manage-members-section').classList.remove('hidden');
+                const manageList = document.getElementById('manage-members-list');
+
+                group.membri_dettagliati.forEach(member => {
+                    if (member.username === group.owner) return; // Salta l'owner
+
+                    const isMod = (group.moderators || []).includes(member.username);
+                    const div = document.createElement('div');
+                    div.className = 'member-item';
+                    div.style.justifyContent = 'space-between';
+                    div.innerHTML = `
+                        <span style="color: var(--theme-text);">
+                            ${member.username} ${isMod ? '🛡️' : ''}
+                        </span>
+                        <button 
+                            class="small-btn role-toggle-btn" 
+                            data-user="${member.username}" 
+                            data-current="${isMod ? 'moderator' : 'member'}"
+                            style="font-size: 0.75rem; padding: 3px 8px;">
+                            ${isMod ? 'Rimuovi Mod' : 'Rendi Mod'}
+                        </button>
+                    `;
+                    manageList.appendChild(div);
+                });
+
+                // Event listeners sui bottoni
+                manageList.querySelectorAll('.role-toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const targetUser = btn.dataset.user;
+                        const currentRole = btn.dataset.current;
+                        const newRole = currentRole === 'moderator' ? 'member' : 'moderator';
+
+                        const res = await fetch(`${backendUrl}/api/group/role`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                requester: currentUser,
+                                group_id: groupId,
+                                target_user: targetUser,
+                                role: newRole
+                            })
+                        });
+
+                        if (res.ok) {
+                            // Aggiorna il bottone immediatamente senza ricaricare
+                            btn.dataset.current = newRole;
+                            const nameSpan = btn.previousElementSibling;
+                            if (newRole === 'moderator') {
+                                btn.textContent = 'Rimuovi Mod';
+                                nameSpan.textContent = `${targetUser} 🛡️`;
+                            } else {
+                                btn.textContent = 'Rendi Mod';
+                                nameSpan.textContent = targetUser;
+                            }
+                        } else {
+                            const err = await res.json();
+                            alert("Errore: " + err.detail);
+                        }
+                    });
+                });
+            }
 
         } else {
             alert("Errore: " + data.detail);

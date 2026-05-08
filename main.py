@@ -84,6 +84,12 @@ class JoinGroup(BaseModel):
     username: str
     group_id: str
 
+class UpdateMemberRole(BaseModel):
+    requester: str
+    group_id: str
+    target_user: str
+    role: str  # "moderator" o "member"
+
 manager = ConnectionManager()
 
 @app.get("/api/test")
@@ -279,6 +285,7 @@ def get_single_group(group_id: str):
         membri_con_stato.append({"username": member, "online": is_online})
         
     group['membri_dettagliati'] = membri_con_stato
+    group['moderators'] = group.get('moderators', [])
     return {"status": "successo", "gruppo": group}
 
 # 2. Rotta per abbandonare il gruppo
@@ -299,6 +306,35 @@ def leave_group(data: LeaveGroup):
         return {"status": "successo", "messaggio": "Hai abbandonato il gruppo."}
     else:
         raise HTTPException(status_code=400, detail="Non fai parte di questo gruppo")
+
+@app.post("/api/group/role")
+def update_member_role(data: UpdateMemberRole):
+    GroupQuery = Query()
+    result = groups_table.search(GroupQuery.id == data.group_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Gruppo non trovato")
+    
+    group = result[0]
+    
+    if group['owner'] != data.requester:
+        raise HTTPException(status_code=403, detail="Solo il proprietario può modificare i ruoli")
+    
+    if data.target_user == group['owner']:
+        raise HTTPException(status_code=400, detail="Non puoi modificare il ruolo del proprietario")
+    
+    if data.role not in ["moderator", "member"]:
+        raise HTTPException(status_code=400, detail="Ruolo non valido")
+    
+    moderators = group.get('moderators', [])
+    
+    if data.role == "moderator" and data.target_user not in moderators:
+        moderators.append(data.target_user)
+    elif data.role == "member" and data.target_user in moderators:
+        moderators.remove(data.target_user)
+    
+    groups_table.update({'moderators': moderators}, GroupQuery.id == data.group_id)
+    return {"status": "successo"}
 
 # Rotta per aggiornare nome e descrizione
 @app.put("/api/group/settings")
@@ -364,7 +400,9 @@ async def websocket_endpoint(websocket: WebSocket, group_id: str, username: str)
                 group_result = groups_table.search(_GroupQuery.id == group_id)
                 if group_result:
                     group = group_result[0]
-                    if group.get('permissions') == 'owner' and group.get('owner') != username:
+                    moderators = group.get('moderators', [])
+                    is_privileged = group.get('owner') == username or username in moderators
+                    if group.get('permissions') == 'owner' and not is_privileged:
                         await websocket.send_json({"action": "error", "data": "Permessi insufficienti."})
                         continue
 
