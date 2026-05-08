@@ -131,10 +131,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (res.ok) {
                         btn.dataset.current = newRole;
                         btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
-                        // Aggiorna il badge nel nome
-                        const nameSpan = btn.closest('.member-item').querySelector('span[style]');
-                        const baseName = targetUser;
-                        nameSpan.innerHTML = `${baseName} ${newRole === 'moderator' ? '🛡️' : ''}`;
+                        
+                        // Trova il secondo span dentro il div flex (il nome, non il dot)
+                        const nameSpan = btn.closest('.member-item').querySelector('div > span:not(.online-dot)');
+                        nameSpan.textContent = `${targetUser} ${newRole === 'moderator' ? '🛡️' : ''}`;
                     } else {
                         const err = await res.json();
                         alert("Errore: " + err.detail);
@@ -219,12 +219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({ username: currentUser, group_id: groupId })
             });
             if (res.ok) {
-                btn.dataset.current = newRole;
-                btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
-
-                // Trova il secondo span dentro il div flex (il nome, non il dot)
-                const nameSpan = btn.closest('.member-item').querySelector('div > span:not(.online-dot)');
-                nameSpan.textContent = `${targetUser} ${newRole === 'moderator' ? '🛡️' : ''}`;
+                window.location.href = 'dashboard.html'; // Torna alla home dopo l'uscita
             } else {
                 alert("Errore durante l'uscita dal gruppo.");
             }
