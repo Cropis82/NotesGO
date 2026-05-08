@@ -262,12 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             console.log("Risposta backend:", data); // aggiungi questa riga temporaneamente
 
-            if (data.groups.length === 0) {
+            if (data.gruppi.length === 0) {
                 publicResultsContainer.innerHTML = `<p class="output-label" style="padding: 10px;">Nessun gruppo pubblico trovato.</p>`;
                 return;
             }
 
-            publicResultsContainer.innerHTML = data.groups.map(group => `
+            publicResultsContainer.innerHTML = data.gruppi.map(group => `
             <div class="group-result-card">
                 <div>
                     <strong style="color: var(--theme-text);">${group.name}</strong>
