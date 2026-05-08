@@ -261,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/groups/search?q=${encodeURIComponent(query)}&username=${encodeURIComponent(currentUser)}`);
             const data = await res.json();
             console.log("Risposta backend:", data); // aggiungi questa riga temporaneamente
+            console.log("groups:", data.groups, "gruppi:", data.gruppi);
 
             if (data.groups.length === 0) {
                 publicResultsContainer.innerHTML = `<p class="output-label" style="padding: 10px;">Nessun gruppo pubblico trovato.</p>`;
