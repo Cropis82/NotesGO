@@ -260,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(`https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev/api/groups/search?q=${encodeURIComponent(query)}&username=${encodeURIComponent(currentUser)}`);
             const data = await res.json();
+            console.log("Risposta backend:", data); // aggiungi questa riga temporaneamente
 
             if (data.groups.length === 0) {
                 publicResultsContainer.innerHTML = `<p class="output-label" style="padding: 10px;">Nessun gruppo pubblico trovato.</p>`;
@@ -455,3 +456,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // si aggiorna visivamente senza che tu debba ricaricare la pagina con F5!
     setInterval(loadGroups, 60000);
 });
+
