@@ -66,8 +66,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sender === group.owner) return ' 👑';
         if ((group.moderators || []).includes(sender)) return ' 🛡️';
         return '';
-    }// Colori randomici per gli utenti
-    const userColors = {};
+    }
+    
+    // Colori randomici per gli utenti
     const colorPalette = ['#e94560', '#2196f3', '#8bc34a', '#ff9800', '#9c27b0', '#00bcd4', '#f44336', '#3f51b5'];
 
     function getUserColor(username) {
