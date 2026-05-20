@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Near your other "let" declarations at the top of the file
     let pendingDeleteColId = null;
     let canWrite = false;
+    let groupData = null; // dichiara in cima con le altre variabili
     // 1. Controlli base e Tema
     const currentUser = localStorage.getItem('loggedUser');
     if (!currentUser) {
@@ -45,6 +46,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     const groupIdDisplay = document.getElementById('group-id-display');
     const backendUrl = 'https://silver-cod-q7pp7qqj9wrvh44qw-8000.app.github.dev'; // Sostituisci se serve
 
+    // Colori randomici per gli utenti
+    const userColors = {};
+    const colorPalette = ['#e94560', '#2196f3', '#8bc34a', '#ff9800', '#9c27b0', '#00bcd4', '#f44336', '#3f51b5'];
+
+    function getUserColor(username) {
+        if (!userColors[username]) {
+            userColors[username] = colorPalette[Object.keys(userColors).length % colorPalette.length];
+        }
+        return userColors[username];
+    }
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getBadge(sender, group) {
+        if (sender === group.owner) return ' 👑';
+        if ((group.moderators || []).includes(sender)) return ' 🛡️';
+        return '';
+    }// Colori randomici per gli utenti
+    const userColors = {};
+    const colorPalette = ['#e94560', '#2196f3', '#8bc34a', '#ff9800', '#9c27b0', '#00bcd4', '#f44336', '#3f51b5'];
+
+    function getUserColor(username) {
+        if (!userColors[username]) {
+            userColors[username] = colorPalette[Object.keys(userColors).length % colorPalette.length];
+        }
+        return userColors[username];
+    }
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getBadge(sender, group) {
+        if (sender === group.owner) return ' 👑';
+        if ((group.moderators || []).includes(sender)) return ' 🛡️';
+        return '';
+    }
+
     // 3. Carica i dati del gruppo
     try {
         const response = await fetch(`${backendUrl}/api/group/${groupId}`);
@@ -56,6 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const moderators = group.moderators || [];
             const isModerator = moderators.includes(currentUser);
             canWrite = group.permissions === 'all' || group.owner === currentUser || isModerator;
+            groupData = group;
 
             if (!canWrite) {
                 // Nascondi tutti i bottoni di scrittura
@@ -131,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (res.ok) {
                         btn.dataset.current = newRole;
                         btn.textContent = newRole === 'moderator' ? '🛡️ Rimuovi' : '🛡️ Mod';
-                        
+
                         // Trova il secondo span dentro il div flex (il nome, non il dot)
                         const nameSpan = btn.closest('.member-item').querySelector('div > span:not(.online-dot)');
                         nameSpan.textContent = `${targetUser} ${newRole === 'moderator' ? '🛡️' : ''}`;
@@ -160,6 +204,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                         alert("Errore: " + err.detail);
                     }
                 });
+            });
+
+            // --- CHAT ---
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+
+            function renderMessage(msg) {
+                const isMine = msg.sender === currentUser;
+                const badge = groupData ? getBadge(msg.sender, groupData) : '';
+                const color = getUserColor(msg.sender);
+
+                const div = document.createElement('div');
+                div.className = `chat-message ${isMine ? 'mine' : 'theirs'}`;
+                div.innerHTML = `
+                    <div class="chat-bubble" ${!isMine ? `style="background:${color}; color:#fff;"` : ''}>
+                        ${msg.text}
+                    </div>
+                    <div class="chat-meta">${isMine ? '' : `<strong>${msg.sender}${badge}</strong> · `}${formatTime(msg.timestamp)}</div>
+                `;
+                chatMessages.appendChild(div);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function sendMessage() {
+                const text = chatInput.value.trim();
+                if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+                ws.send(JSON.stringify({ action: "send_message", payload: { text } }));
+                chatInput.value = '';
+            }
+
+            chatSendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendMessage();
             });
         } else {
             alert("Errore: " + data.detail);
@@ -400,6 +478,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (currentTaskInView && currentTaskInView.id === payload.task_id) {
                     document.getElementById('task-view-modal').classList.add('hidden');
                 }
+                break;
+            case "init_messages":
+                payload.forEach(msg => renderMessage(msg));
+                break;
+            case "new_message":
+                renderMessage(payload);
                 break;
         }
     };

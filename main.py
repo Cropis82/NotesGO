@@ -21,6 +21,7 @@ users_table = db.table('users')
 groups_table = db.table('groups') # Creiamo una tabella separata per i gruppi
 columns_table = db.table('columns')
 tasks_table = db.table('tasks')
+messages_table = db.table('messages')
 TaskQuery = Query()
 UserQuery = Query()
 
@@ -385,6 +386,10 @@ async def websocket_endpoint(websocket: WebSocket, group_id: str, username: str)
     # 2. AGGIUNGI QUESTO: Invia i task esistenti per questo gruppo
     tasks = tasks_table.search(TaskQuery.group_id == group_id)
     await websocket.send_json({"action": "init_tasks", "data": tasks})
+    MsgQuery = Query()
+    messages = messages_table.search(MsgQuery.group_id == group_id)
+    messages.sort(key=lambda x: x.get('timestamp', 0))
+    await websocket.send_json({"action": "init_messages", "data": messages})
     
     try:
         while True:
@@ -489,6 +494,19 @@ async def websocket_endpoint(websocket: WebSocket, group_id: str, username: str)
                 
                 tasks_table.update(updated_fields, TaskQuery.id == task_id)
                 await manager.broadcast({"action": "task_updated", "data": payload}, group_id)
+            
+            elif action == "send_message":
+                new_message = {
+                    "id": str(uuid.uuid4()),
+                    "group_id": group_id,
+                    "sender": username,
+                    "text": payload.get("text", "").strip(),
+                    "timestamp": time.time()
+                }
+                if not new_message["text"]:
+                    continue
+                messages_table.insert(new_message)
+                await manager.broadcast({"action": "new_message", "data": new_message}, group_id)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, group_id)

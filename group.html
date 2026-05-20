@@ -40,9 +40,22 @@
                 Nuovo Task</button>
         </div>
 
-        <div id="kanban-board" class="kanban-board">
-            <div class="add-column-card" id="add-column-container">
-                <button id="add-column-btn">+ Aggiungi Colonna</button>
+        <div id="main-content">
+            <div id="kanban-board-wrapper">
+                <div id="kanban-board" class="kanban-board">
+                    <div class="add-column-card" id="add-column-container">
+                        <button id="add-column-btn">+ Aggiungi Colonna</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-panel">
+                <div id="chat-header">💬 Chat</div>
+                <div id="chat-messages"></div>
+                <div id="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Scrivi un messaggio..." autocomplete="off">
+                    <button id="chat-send-btn">➤</button>
+                </div>
             </div>
         </div>
 
