@@ -67,27 +67,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if ((group.moderators || []).includes(sender)) return ' 🛡️';
         return '';
     }
-    
-    // Colori randomici per gli utenti
-    const colorPalette = ['#e94560', '#2196f3', '#8bc34a', '#ff9800', '#9c27b0', '#00bcd4', '#f44336', '#3f51b5'];
-
-    function getUserColor(username) {
-        if (!userColors[username]) {
-            userColors[username] = colorPalette[Object.keys(userColors).length % colorPalette.length];
-        }
-        return userColors[username];
-    }
-
-    function formatTime(timestamp) {
-        const date = new Date(timestamp * 1000);
-        return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function getBadge(sender, group) {
-        if (sender === group.owner) return ' 👑';
-        if ((group.moderators || []).includes(sender)) return ' 🛡️';
-        return '';
-    }
 
     // 3. Carica i dati del gruppo
     try {
