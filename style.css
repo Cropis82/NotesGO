@@ -985,14 +985,15 @@ input[type="password"]:focus {
     display: flex;
     flex: 1;
     overflow: hidden;
-    height: calc(100vh);
+    gap: 16px;            /* this adds the space between board and chat */
+    min-height: 0;        /* critical: same reason */
 }
 
 #kanban-board-wrapper {
     flex: 1;
     overflow-x: auto;
     overflow-y: hidden;
-    display: flex;
+    min-width: 0;
 }
 
 #kanban-board {
@@ -1009,16 +1010,18 @@ input[type="password"]:focus {
     min-width: 300px;
     background: var(--theme-surface);
     border-left: 1px solid var(--theme-border);
+    border-radius: 8px;   /* optional, makes it look cleaner */
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 #chat-header {
     padding: 12px 16px;
     font-weight: bold;
-    color: var(--theme-text);
+    color: var(--text-light);       /* fix: hard white so it's always readable */
     border-bottom: 1px solid var(--theme-border);
-    background: var(--theme-header-bg);
+    background: var(--theme-primary);   /* use primary instead of header-bg */
 }
 
 #chat-messages {
