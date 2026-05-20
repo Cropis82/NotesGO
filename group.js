@@ -465,6 +465,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             case "new_message":
                 renderMessage(payload);
                 break;
+            case "task_updated":
+                const updatedIndex = tasksData.findIndex(t => t.id === payload.id);
+                if (updatedIndex !== -1) {
+                    tasksData[updatedIndex] = { ...tasksData[updatedIndex], ...payload };
+                    renderBoard();
+                }
+                break;
         }
     };
 
@@ -743,6 +750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Chiama questa funzione dentro la tua renderBoard(), dopo aver creato l'HTML della colonna
     function renderTasksForColumn(columnId, columnBodyElement) {
         const columnTasks = tasksData.filter(t => t.column_id === columnId);
+        const editTaskBtn = document.getElementById('edit-task-btn');
 
         columnTasks.forEach(task => {
             const taskEl = document.createElement('div');
@@ -774,6 +782,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
+            // Mostra/nascondi il bottone modifica in base ai permessi
+            if (canWrite) {
+                editTaskBtn.style.display = '';
+            } else {
+                editTaskBtn.style.display = 'none';
+            }
+
 
             // CLICK PER VISUALIZZARE I DETTAGLI
             taskEl.addEventListener('click', () => openTaskViewModal(task));
@@ -786,26 +801,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         const desc = document.getElementById('task-desc').value;
         const dueDate = document.getElementById('task-due-date').value;
         const columnId = document.getElementById('task-column-select').value;
+        const editId = document.getElementById('edit-task-id').value;
 
         if (!title.trim()) {
             alert("Il titolo del task è obbligatorio!");
             return;
         }
 
-        // Invia al backend tramite WebSocket
-        ws.send(JSON.stringify({
-            action: "create_task",
-            payload: {
-                title: title,
-                description: desc,
-                due_date: dueDate,
-                column_id: columnId
-            }
-        }));
+        if (editId) {
+            // Modifica task esistente
+            ws.send(JSON.stringify({
+                action: "update_task",
+                payload: {
+                    id: editId,
+                    title: title,
+                    description: desc,
+                    due_date: dueDate,
+                    column_id: columnId
+                }
+            }));
+        } else {
+            // Nuovo task
+            ws.send(JSON.stringify({
+                action: "create_task",
+                payload: {
+                    title: title,
+                    description: desc,
+                    due_date: dueDate,
+                    column_id: columnId
+                }
+            }));
+        }
 
-        // Chiudi il modale
         taskModal.classList.add('hidden');
     });
+
+    document.getElementById('edit-task-btn').addEventListener('click', () => {
+        if (!currentTaskInView) return;
+
+        // Passa al modale di creazione riutilizzandolo per la modifica
+        document.getElementById('task-modal-title').innerText = "Modifica Task";
+        document.getElementById('edit-task-id').value = currentTaskInView.id;
+        document.getElementById('task-title').value = currentTaskInView.title;
+        document.getElementById('task-desc').value = currentTaskInView.description || '';
+        document.getElementById('task-due-date').value = currentTaskInView.due_date || '';
+
+        // Preseleziona la colonna corrente
+        taskColumnSelect.innerHTML = columnsData.map(col =>
+            `<option value="${col.id}" ${col.id === currentTaskInView.column_id ? 'selected' : ''}>${col.title}</option>`
+        ).join('');
+
+        // Chiudi il modale di visualizzazione e apri quello di modifica
+        document.getElementById('task-view-modal').classList.add('hidden');
+        taskModal.classList.remove('hidden');
+    });
+
     // --- FUNZIONE PER MASSIMIZZARE IL TASK ---
     function openTaskViewModal(task) {
         // 1. Salviamo il task nella variabile globale (ci servirà poi per modificarlo o eliminarlo)
