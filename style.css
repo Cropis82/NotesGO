@@ -1192,7 +1192,30 @@ main.dashboard-container {
     padding-top: 8px;
 }
 
-@media (max-width: 768px) {
+/* Desktop: hide the toggle bar */
+#chat-toggle-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--theme-primary);
+    color: white;
+    padding: 12px;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 39;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {    
+    body, html {
+        overflow: visible;
+    }
 
     /* Dashboard page */
     .public-search {
@@ -1258,30 +1281,11 @@ main.dashboard-container {
     }
     
     .group-page-body {
-        overflow: hidden auto; /* vertical only */
+        overflow: hidden;
+        height: 100vh;
     }
 
     body.group-page-body {
         padding-bottom: 0;
     }
-}
-
-/* Desktop: hide the toggle bar */
-#chat-toggle-bar {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: var(--theme-primary);
-    color: white;
-    padding: 12px;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 39;
-    border-radius: 12px 12px 0 0;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-    box-sizing: border-box;
 }
