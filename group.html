@@ -50,7 +50,10 @@
             </div>
 
             <div id="chat-panel">
-                <div id="chat-header">💬 Chat</div>
+                <div id="chat-header">
+                    💬 Chat
+                    <button id="chat-close-btn" style="display:none; float:right; background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
+                </div>
                 <div id="chat-messages"></div>
                 <div id="chat-input-area">
                     <input type="text" id="chat-input" placeholder="Scrivi un messaggio..." autocomplete="off">
@@ -213,6 +216,8 @@
             </div>
         </div>
     </div>
+
+    <div id="chat-toggle-bar">💬 Chat</div>
 
     <script src="group.js"></script>
 </body>

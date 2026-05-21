@@ -894,4 +894,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('task-view-modal').classList.add('hidden');
 
     });
+
+    // --- CHAT MOBILE TOGGLE ---
+    const chatToggleBar = document.getElementById('chat-toggle-bar');
+    const chatPanel = document.getElementById('chat-panel');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+
+    chatToggleBar.addEventListener('click', () => {
+        chatPanel.classList.add('chat-open');
+        chatCloseBtn.style.display = 'inline';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
+    chatCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        chatPanel.classList.remove('chat-open');
+    });
 });
